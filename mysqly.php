@@ -120,8 +120,8 @@ class mysqly {
     }
     
     $values = implode(', ', $values);
-    $where = implode(' AND ', $query);
-    $sql = "UPDATE {$table} SET {$values} WHERE {$where}";
+    $where = $query ? ' WHERE ' . implode(' AND ', $query) : '';
+    $sql = "UPDATE {$table} SET {$values} {$where}";
     $statement = self::exec($sql, $bind);
     return self::$db->lastInsertId();
   }
