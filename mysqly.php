@@ -41,21 +41,31 @@ class mysqly {
     }
     else {
       $sql = "SELECT * FROM {$sql_or_table}";
+      $order = '';
       
       if ( $bind_or_where ) {
         if ( is_array($bind_or_where) ) {
           foreach ( $bind_or_where as $k => $v ) {
+            if ( $k == 'order_by' ) {
+              $order = ' ORDER BY ' . $v;
+              continue;
+            }
+            
             $where[] = "`{$k}` = :{$k}";
             $bind[":{$k}"] = $v;
           }
           
-          $sql .= ' WHERE ' . implode(' AND ', $where);
+          if ( $where ) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
+          }
         }
         else {
           $sql .= ' WHERE id = :id';
           $bind[":id"] = $bind_or_where;
         }
       }
+      
+      $sql .= $order;
     }
     
     $statement = self::exec($sql, $bind);
