@@ -87,6 +87,15 @@ class mysqly {
   }
   
   /**
+   * Fetch 2-column rows and trasform that to associaltive array: [1st column => 2nd column]
+   */
+  public static function key_vals($sql_or_table, $bind_or_where = []) {
+    $rows = self::fetch($sql_or_table, $bind_or_where);
+    foreach ( $rows as $row ) $list[array_shift($row)] = array_shift($row);
+    return $list;
+  }
+  
+  /**
    * Insert data to table
    */
   public static function insert($table, $data, $ignore = false) {
