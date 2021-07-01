@@ -57,7 +57,7 @@ $users = mysqly::fetch('users', [ 'age' => 45 ]);
 
 ### Simple sorting
 ```php
-$users = mysqly::fetch('users', [ 'age' => 45, ['order_by' => 'id DESC'] ]);
+$users = mysqly::fetch('users', [ 'age' => 45, 'order_by' => 'id DESC' ]);
 # The same as "SELECT * FROM users WHERE age = 45 ORDER BY id DESC"
 ```
 
@@ -65,4 +65,20 @@ $users = mysqly::fetch('users', [ 'age' => 45, ['order_by' => 'id DESC'] ]);
 ```php
 $user = mysqly::fetch('users', 45)[0]; # ! you'll have to select only first row from results
 # The same as "SELECT * FROM users WHERE id = 45"
+```
+
+# Insert data
+### Insert single row as associative array
+```php
+mysqly::insert('users', ['age' => 46, 'gender' => 'x']);
+```
+
+### Insert with ignore (if duplicate primary/unique key)
+```php
+mysqly::insert('users', ['age' => 46, 'gender' => 'x'], true);
+```
+
+### Insert update (update data if duplicate primary/unique key)
+```php
+mysqly::insert_update('users', ['age' => 46, 'gender' => 'x']);
 ```
