@@ -67,6 +67,17 @@ $user = mysqly::fetch('users', 45)[0]; # ! you'll have to select only first row 
 # The same as "SELECT * FROM users WHERE id = 45"
 ```
 
+### Fetch single column list (one-dimensional array)
+```php
+$ids = mysqly::array('SELECT id FROM users');
+```
+
+### Fetch key-value pairs (one-dimensional associative array)
+```php
+$ages = mysqly::key_vals('SELECT id, age FROM users');
+# example resulting array: [ 1 => 45, 2 => 46 ... ]
+```
+
 # Insert data
 ### Insert single row as associative array
 ```php
