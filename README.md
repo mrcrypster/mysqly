@@ -28,7 +28,7 @@ $rows = mysqly::fetch('SELECT NOW()');
 print_r( $rows );
 ```
 
-# Secure authentication
+# Better authentication
 To make authentication more secure, you can create auth file `/var/lib/mysqly/.auth.php` with auth data:
 ```php
 <?php return [
@@ -36,4 +36,27 @@ To make authentication more secure, you can create auth file `/var/lib/mysqly/.a
   'pwd' => '23049ujasdW_',
   'db' => 'crypto'
 ];
+```
+
+# Fetch data
+## Fetch rows by SQL query
+```php
+$users = mysqly::fetch('SELECT * FROM users');
+```
+
+## Parameters binding
+```php
+$users = mysqly::fetch('SELECT * FROM users WHERE age = :age', [ ':age' => $_GET['age'] ]);
+```
+
+## Fetch rows from table with filters
+```php
+$users = mysqly::fetch('users', ['age' => '45']);
+# The same as "SELECT * FROM users WHERE age = 45"
+```
+
+## Fetch rows from table by ID
+```php
+$user = mysqly::fetch('users', 45)[0]; # ! you'll have to select only first row from results
+# The same as "SELECT * FROM users WHERE id = 45"
 ```
