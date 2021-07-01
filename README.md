@@ -93,3 +93,19 @@ mysqly::insert('users', ['age' => 46, 'gender' => 'x'], true);
 ```php
 mysqly::insert_update('users', ['age' => 46, 'gender' => 'x']);
 ```
+
+# Update data
+### Update data by filters
+To update gender column to "x" for all users with age = 45:
+```php
+mysqly::update('users', ['age' => 45], ['gender' => 'x']);
+#               ▲        ▲              ▲
+#               table    filter         update
+```
+
+# Remove data
+### Remove data by filters
+To remove all rows with age = 46:
+```php
+mysqly::remove('users', ['age' => 46]);
+```
