@@ -24,7 +24,8 @@ mysqly::auth('user', 'pwd', 'db', 'localhost');
 
 Fetch something:
 ```php
-print_r(mysqly::fetch('SELECT NOW()'));
+$rows = mysqly::fetch('SELECT NOW()');
+print_r( $rows );
 ```
 
 # Secure authentication
