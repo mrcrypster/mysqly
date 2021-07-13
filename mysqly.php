@@ -148,8 +148,8 @@ class mysqly {
   /**
    * Remove data from table
    */
-  public static function remove($table, $where) {
-    if ( is_array($where) ) {
+  public static function remove($table, $bind_or_where) {
+    if ( is_array($bind_or_where) ) {
       foreach ( $bind_or_where as $k => $v ) {
         $query[] = "`{$k}` = :{$k}";
         $bind[":{$k}"] = $v;
@@ -157,10 +157,23 @@ class mysqly {
     }
     else {
       $query[] = 'id = :id';
-      $bind[':id'] = $where;
+      $bind[':id'] = $bind_or_where;
     }
     
     $sql = "DELETE FROM {$table} WHERE " . implode(' AND ', $query);
     self::exec($sql, $bind);
+  }
+  
+  
+  
+  /**
+   * Magick methods
+   */
+  
+  public static function __callStatic($name, $args) {
+    if ( is_numeric($args[0]) && strpos($name, '_') ) {
+      list($table, $col) = explode('_', $name);
+      return mysqly::fetch('SELECT ' . $col . ' FROM ' . $table . ' WHERE id = :id', [':id' => $args[0]])[0][$col];
+    }
   }
 }
