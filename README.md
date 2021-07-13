@@ -4,6 +4,7 @@ Micro PHP mysql lib (~ 150 lines of code) with powerful yet simple fetch & updat
 - parametric queries and values binding for security
 - PDO-based, no extra dependencies
 - near-zero overhead because of static class in a single file
+- handy magic methods for quick access
 
 # Installation
 Download latest version of library file:
@@ -77,6 +78,16 @@ $ids = mysqly::array('SELECT id FROM users');
 $ages = mysqly::key_vals('SELECT id, age FROM users');
 # example resulting array: [ 1 => 45, 2 => 46 ... ]
 ```
+
+
+# Magic fetch
+Set of magic methods (not directly defined, but dynamically handled) allows quick access in the following cases:
+### Select column value from specific table by id
+```php
+$name = mysqly::users_name(45);
+# SELECT name FROM users WHERE id = 45
+```
+
 
 # Insert data
 ### Insert single row as associative array
