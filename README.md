@@ -33,9 +33,9 @@ print_r( $rows );
 To make authentication more secure, you can create auth file `/var/lib/mysqly/.auth.php` with auth data:
 ```php
 <?php return [
-  'user' => 'crypster',
-  'pwd' => '23049ujasdW_',
-  'db' => 'crypto'
+  'user' => 'user',
+  'pwd' => 'pwd',
+  'db' => 'db'
 ];
 ```
 
