@@ -1,13 +1,17 @@
-Micro PHP mysql lib (~ 150 lines of code) with powerful yet simple fetch & update. Features:
-- fetch/insert/update/delete based on associative arrays
-- native SQL queries
-- parametric queries and values binding for security
+Micro PHP mysql lib (~ 200 lines of code) with ultra powerful CRUD for faster than ever development:
+- parametric fetch/insert/update/delete (based on associative arrays): `fetch('table', ['col' => 10])`
+- native SQL queries support
+- values binding for security
 - PDO-based, no extra dependencies
 - near-zero overhead because of static class in a single file
-- handy magic methods for quick access
+- built `IN` bind support: `fetch('table', ['id' => [1, 2, 3]])`
+- magic methods for even faster development:
+  - get column value from a table by id
+  - get single row from a table by id
+  - get count/avg/sum/max/min from table by parametric filter (implementing in #6)
 
 # Installation
-Download latest version of library file:
+Just download latest version of lib:
 ```bash
 wget https://raw.githubusercontent.com/mrcrypster/mysqly/main/mysqly.php
 ```
