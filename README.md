@@ -44,32 +44,44 @@ To make authentication more secure, you can create auth file `/var/lib/mysqly/.a
 ```
 
 # Fetch data
-### Fetch rows by SQL query
-```php
-$users = mysqly::fetch('SELECT * FROM users');
-```
-
-### Parameters binding
-```php
-$users = mysqly::fetch('SELECT * FROM users WHERE age = :age', [ ':age' => $_GET['age'] ]);
-```
-
-### Fetch rows from table with filters
+### Parametric fetch
 ```php
 $users = mysqly::fetch('users', [ 'age' => 45 ]);
-# The same as "SELECT * FROM users WHERE age = 45"
-```
-
-### Simple sorting
-```php
-$users = mysqly::fetch('users', [ 'age' => 45, 'order_by' => 'id DESC' ]);
-# The same as "SELECT * FROM users WHERE age = 45 ORDER BY id DESC"
+# SELECT * FROM users WHERE age = 45
 ```
 
 ### Fetch rows from table by ID
 ```php
 $user = mysqly::fetch('users', 45)[0]; # ! you'll have to select only first row from results
-# The same as "SELECT * FROM users WHERE id = 45"
+# SELECT * FROM users WHERE id = 45
+```
+
+### Parametric sorting
+```php
+$users = mysqly::fetch('users', [ 'age' => 45, 'order_by' => 'id DESC' ]);
+# SELECT * FROM users WHERE age = 45 ORDER BY id DESC
+```
+
+### Secure parametric `IN` support
+```php
+$users = mysqly::fetch('users', [ 'age' => [45, 46, 47] ]);
+# SELECT * FROM users WHERE age IN (45, 46, 47)
+```
+
+### Fetch using standard SQL
+```php
+$users = mysqly::fetch('SELECT * FROM users');
+```
+
+### Binding
+```php
+$users = mysqly::fetch('SELECT * FROM users WHERE age = :age', [ ':age' => $_GET['age'] ]);
+```
+
+### Secure `IN` binding
+```php
+$users = mysqly::fetch('SELECT * FROM users WHERE age IN (:ages)', [ 'ages' => [45, 46, 47] ]);
+# SELECT * FROM users WHERE age IN (45, 46, 47)
 ```
 
 ### Fetch single column list (one-dimensional array)
