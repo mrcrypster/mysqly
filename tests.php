@@ -66,7 +66,13 @@ class tests extends testy {
     $rows = mysqly::fetch('test', ['age' => [10, 11, 12]]);
     self::assert(3,
                  count($rows),
-                 'Checking rows selected with IN clause');
+                 'Checking parametric IN');
+                 
+                 
+    $rows = mysqly::fetch('SELECT * FROM test WHERE age IN (:ages)', ['ages' => [10, 11, 12]]);
+    self::assert(3,
+                 count($rows),
+                 'Checking SQL IN binding');
   }
 }
 

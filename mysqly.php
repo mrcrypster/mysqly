@@ -19,8 +19,24 @@ class mysqly {
       self::$db = new PDO('mysql:host=' . self::$auth['host'] . ';dbname=' . self::$auth['db'], self::$auth['user'], self::$auth['pwd']);
     }
     
+    $params = [];
+    foreach ( $bind as $k => $v ) {
+      if ( is_array($v) ) {
+        $in = [];
+        foreach ( $v as $i => $sub_v ) {
+          $in[] = ":{$k}_{$i}";
+          $params[":{$k}_{$i}"] = $sub_v;
+        }
+        
+        $sql = str_replace(':' . $k, implode(', ', $in), $sql);
+      }
+      else {
+        $params[$k] = $v;
+      }
+    }
+    
     $statement = self::$db->prepare($sql);
-    $statement->execute($bind);
+    $statement->execute($params);
     
     if ( (int)$statement->errorInfo()[0] ) {
       throw new Exception($statement->errorInfo()[2]);
