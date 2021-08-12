@@ -1,9 +1,16 @@
 <?php
 
+# SR: https://raw.githubusercontent.com/mrcrypster/mysqly/main/mysqly.php
+
 class mysqly {
   private static $db;
   private static $auth = [];
   
+  
+  
+  # --- Internal implementations
+  
+  # Execute query
   private static function exec($sql, $bind = []) {
     if ( !self::$db ) {
       if ( !self::$auth ) {
@@ -22,30 +29,60 @@ class mysqly {
     return $statement;
   }
   
+  # Transform parametric filter into SQL clauses and binds
+  private static function filter($filter) {
+    $bind = $query = [];
+    
+    if ( is_array($filter) ) {
+      foreach ( $filter as $k => $v ) {
+        $query[] = "`{$k}` = :{$k}";
+        $bind[":{$k}"] = $v;
+      }
+    }
+    else {
+      $query[] = 'id = :id';
+      $bind[':id'] = $filter;
+    }
+    
+    return [$query ? (' WHERE ' . implode(' AND ', $query)) : '', $bind];
+  }
   
-  /**
-   * Connect to mysql server
-   */
+  # Transform data to values clause
+  private static function values($data, &$bind = []) {
+    foreach ( $data as $name => $value ) {
+      $values[] = "`{$name}` = :{$name}";
+      $bind[":{$name}"] = $value;
+    }
+    
+    return implode(', ', $values);
+  }
+  
+  
+  
+  # --- Public interfaces
+  
+  # Connect to server
   public static function auth($user, $pwd, $db, $host = 'localhost') {
     self::$auth = ['user' => $user, 'pwd' => $pwd, 'db' => $db, 'host' => $host];
   }
   
   
-  /**
-   * Fetch array of rows based on SQL or parameters
-   */
-  public static function fetch($sql_or_table, $bind_or_where = []) {
+  # Fetch array of rows based on SQL or parametric query
+  # ::fetch('table', ['age' => 27]);
+  # ::fetch('table', $id);
+  # ::fetch('SELECT id, name FROM table WHERE age = :age', [':age' => 27])
+  public static function fetch($sql_or_table, $bind_or_filter = []) {
     if ( strpos($sql_or_table, ' ') || (strpos($sql_or_table, 'SELECT ') === 0) ) {
       $sql = $sql_or_table;
-      $bind = $bind_or_where;
+      $bind = $bind_or_filter;
     }
     else {
       $sql = "SELECT * FROM {$sql_or_table}";
       $order = '';
       
-      if ( $bind_or_where ) {
-        if ( is_array($bind_or_where) ) {
-          foreach ( $bind_or_where as $k => $v ) {
+      if ( $bind_or_filter ) {
+        if ( is_array($bind_or_filter) ) {
+          foreach ( $bind_or_filter as $k => $v ) {
             if ( $k == 'order_by' ) {
               $order = ' ORDER BY ' . $v;
               continue;
@@ -61,7 +98,7 @@ class mysqly {
         }
         else {
           $sql .= ' WHERE id = :id';
-          $bind[":id"] = $bind_or_where;
+          $bind[":id"] = $bind_or_filter;
         }
       }
       
@@ -77,103 +114,76 @@ class mysqly {
     return $list;
   }
   
-  /**
-   * Fetch array of values (single column list) based on SQL or parameters
-   */
-  public static function array($sql_or_table, $bind_or_where = []) {
-    $rows = self::fetch($sql_or_table, $bind_or_where);
+  # Fetch array of values (single column list, 1st column values)
+  # ::array('table', ['age' => 27]);
+  # ::array('SELECT name FROM table WHERE age = :age', [':age' => 27])
+  public static function array($sql_or_table, $bind_or_filter = []) {
+    $rows = self::fetch($sql_or_table, $bind_or_filter);
     foreach ( $rows as $row ) $list[] = array_shift($row);
     return $list;
   }
   
-  /**
-   * Fetch 2-column rows and trasform that to associaltive array: [1st column => 2nd column]
-   */
-  public static function key_vals($sql_or_table, $bind_or_where = []) {
-    $rows = self::fetch($sql_or_table, $bind_or_where);
+  # Fetch 2-column rows and trasform that to associaltive array: [1st column => 2nd column]
+  # ::key_vals('table', ['col' => 'val'])
+  # ::key_vals('SELECT id, name FROM table WHERE age = :age', [':age' => 27])
+  public static function key_vals($sql_or_table, $bind_or_filter = []) {
+    $rows = self::fetch($sql_or_table, $bind_or_filter);
     foreach ( $rows as $row ) $list[array_shift($row)] = array_shift($row);
     return $list;
   }
   
-  /**
-   * Insert data to table
-   */
+  # Insert new data & return last insert ID (if any auto_increment column)
+  # ::insert('table', ['col' => 'val']);
   public static function insert($table, $data, $ignore = false) {
-    foreach ( $data as $name => $value ) {
-      $values[] = "`{$name}` = :{$name}";
-      $bind[":{$name}"] = $value;
-    }
-    
-    $values = implode(', ', $values);
+    $bind = [];
+    $values = self::values($data, $bind);
     $sql = 'INSERT ' . ($ignore ? ' IGNORE ' : '') . "INTO {$table} SET {$values}";
     self::exec($sql, $bind);
     return self::$db->lastInsertId();
   }
   
-  /**
-   * Insert data to table, update date on duplicate keys
-   */
+  # Insert/update data
+  # ::insert_update('table', ['col' => 'val']);
   public static function insert_update($table, $data) {
-    foreach ( $data as $name => $value ) {
-      $values[] = "`{$name}` = :{$name}";
-      $bind[":{$name}"] = $value;
-    }
-    
-    $values = implode(', ', $values);
+    $bind = [];
+    $values = self::values($data, $bind);
     $sql = 'INSERT ' . ($ignore ? ' IGNORE ' : '') . "INTO {$table} SET {$values} ON DUPLICATE KEY UPDATE {$values}";
     self::exec($sql, $bind);
   }
   
-  /**
-   * Update data in table
-   */
-  public static function update($table, $where, $data) {
-    foreach ( $data as $name => $value ) {
-      $values[] = "`{$name}` = :{$name}";
-      $bind[":{$name}"] = $value;
-    }
+  # Update data
+  # ::update('table', $id, ['col' => 'val']);
+  # ::update('table', ['age' => 27], ['col' => 'val']);
+  public static function update($table, $filter, $data) {
+    list($where, $bind) = self::filter($filter);
+    $values = self::values($data, $bind);
     
-    foreach ( $where as $k => $v ) {
-      $query[] = "`{$k}` = :{$k}";
-      $bind[":{$k}"] = $v;
-    }
-    
-    $values = implode(', ', $values);
-    $where = $query ? ' WHERE ' . implode(' AND ', $query) : '';
     $sql = "UPDATE {$table} SET {$values} {$where}";
     $statement = self::exec($sql, $bind);
+    
     return self::$db->lastInsertId();
   }
   
-  /**
-   * Remove data from table
-   */
-  public static function remove($table, $bind_or_where) {
-    if ( is_array($bind_or_where) ) {
-      foreach ( $bind_or_where as $k => $v ) {
-        $query[] = "`{$k}` = :{$k}";
-        $bind[":{$k}"] = $v;
-      }
-    }
-    else {
-      $query[] = 'id = :id';
-      $bind[':id'] = $bind_or_where;
-    }
-    
-    $sql = "DELETE FROM {$table} WHERE " . implode(' AND ', $query);
-    self::exec($sql, $bind);
+  # Remove data
+  # ::remove('table', $id)
+  # ::remove('table', ['age' => 25])
+  public static function remove($table, $filter) {
+    list($where, $bind) = self::filter($filter);
+    self::exec("DELETE FROM {$table} " . $where, $bind);
   }
   
   
   
-  /**
-   * Magick methods
-   */
+  # --- Magick methods ---
   
   public static function __callStatic($name, $args) {
+    
+    # Get single or all columns from table by filter
+    # ::table_column($id) - for a single column
+    # ::table_($id) - for all columns
     if ( is_numeric($args[0]) && strpos($name, '_') ) {
       list($table, $col) = explode('_', $name);
-      return mysqly::fetch('SELECT ' . $col . ' FROM ' . $table . ' WHERE id = :id', [':id' => $args[0]])[0][$col];
+      return mysqly::fetch('SELECT ' . ($col ?: '*') . ' FROM ' . $table . ' WHERE id = :id', [':id' => $args[0]])[0][$col];
     }
   }
 }
