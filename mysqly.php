@@ -1,6 +1,6 @@
 <?php
 
-# SR: https://raw.githubusercontent.com/mrcrypster/mysqly/main/mysqly.php
+# SRC: https://raw.githubusercontent.com/mrcrypster/mysqly/main/mysqly.php
 
 class mysqly {
   private static $db;
@@ -35,16 +35,33 @@ class mysqly {
     
     if ( is_array($filter) ) {
       foreach ( $filter as $k => $v ) {
-        $query[] = "`{$k}` = :{$k}";
-        $bind[":{$k}"] = $v;
+        self::condition($k, $v, $query, $bind);
       }
     }
     else {
-      $query[] = 'id = :id';
-      $bind[':id'] = $filter;
+      self::condition('id', $filter, $query, $bind);
     }
     
     return [$query ? (' WHERE ' . implode(' AND ', $query)) : '', $bind];
+  }
+  
+  # Transform single condition and add to where/bind clauses arrays
+  private static function condition($k, $v, &$where, &$bind) {
+    if ( is_array($v) ) {
+      $in = [];
+      
+      foreach ( $v as $i => $sub_v ) {
+        $in[] = ":{$k}_{$i}";
+        $bind[":{$k}_{$i}"] = $sub_v;
+      }
+      
+      $in = implode(', ', $in);
+      $where[] = "`{$k}` IN ($in)";
+    }
+    else {
+      $where[] = "`{$k}` = :{$k}";
+      $bind[":{$k}"] = $v;
+    }
   }
   
   # Transform data to values clause
@@ -88,8 +105,7 @@ class mysqly {
               continue;
             }
             
-            $where[] = "`{$k}` = :{$k}";
-            $bind[":{$k}"] = $v;
+            self::condition($k, $v, $where, $bind);
           }
           
           if ( $where ) {
@@ -147,7 +163,7 @@ class mysqly {
   public static function insert_update($table, $data) {
     $bind = [];
     $values = self::values($data, $bind);
-    $sql = 'INSERT ' . ($ignore ? ' IGNORE ' : '') . "INTO {$table} SET {$values} ON DUPLICATE KEY UPDATE {$values}";
+    $sql = "INSERT INTO {$table} SET {$values} ON DUPLICATE KEY UPDATE {$values}";
     self::exec($sql, $bind);
   }
   
@@ -184,6 +200,9 @@ class mysqly {
     if ( is_numeric($args[0]) && strpos($name, '_') ) {
       list($table, $col) = explode('_', $name);
       return mysqly::fetch('SELECT ' . ($col ?: '*') . ' FROM ' . $table . ' WHERE id = :id', [':id' => $args[0]])[0][$col];
+    }
+    else {
+      throw new PDOException($name . '() method is unknown' );
     }
   }
 }
