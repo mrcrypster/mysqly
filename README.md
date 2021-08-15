@@ -98,10 +98,22 @@ $ages = mysqly::key_vals('SELECT id, age FROM users');
 
 # Magic fetch
 Set of magic methods (not directly defined, but dynamically handled) allows quick access in the following cases:
-### Select column value from specific table by id
+### Select single column value from a table by id
 ```php
 $name = mysqly::users_name(45);
 # SELECT name FROM users WHERE id = 45
+```
+
+### Select single column value from a table by custom parameters
+```php
+$name = mysqly::users_name(['col' => 'val']);
+# SELECT name FROM users WHERE col = 'val'
+```
+
+### Select whole row (all columns) from table by id
+```php
+$user = mysqly::users_(45);
+# SELECT * FROM users WHERE id = 45
 ```
 
 
