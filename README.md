@@ -95,6 +95,12 @@ $ages = mysqly::key_vals('SELECT id, age FROM users');
 # example resulting array: [ 1 => 45, 2 => 46 ... ]
 ```
 
+### Fetch random row based on parametric query
+```php
+$row = mysqly::random('users', ['age' => 25]);
+# SELECT * FROM users WHERE age = 25 ORDER BY RAND() LIMIT 1
+```
+
 
 # Magic fetch
 Set of magic methods (not directly defined, but dynamically handled) allows quick access in the following cases:

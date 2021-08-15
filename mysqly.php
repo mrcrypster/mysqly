@@ -146,6 +146,15 @@ class mysqly {
     return $list;
   }
   
+  # Fetch random row based on parametric query
+  # ::random('table');
+  # ::random('table', ['age' => 27]);
+  public static function random($table, $filter = []) {
+    list($where, $bind) = self::filter($filter);
+    $sql = 'SELECT * FROM ' . $table . ' ' . $where . ' ORDER BY RAND() LIMIT 1';
+    return self::fetch($sql, $bind)[0];
+  }
+  
   # Fetch array of values (single column list, 1st column values)
   # ::array('table', ['age' => 27]);
   # ::array('SELECT name FROM table WHERE age = :age', [':age' => 27])

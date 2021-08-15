@@ -41,6 +41,21 @@ class tests extends testy {
                  'Checking SQL query');
   }
   
+  public static function test_random() {
+    mysqly::insert('test', ['age' => 31, 'name' => 'name 1']);
+    mysqly::insert('test', ['age' => 31, 'name' => 'name 2']);
+    
+    $totals = [];
+    for ( $i = 0; $i < 50; $i++ ) {
+      $row = mysqly::random('test', ['age' => 31]);
+      $totals[$row['name']]++;
+    }
+    
+    self::assert(true,
+                 $totals['name 1'] > 0 && $totals['name 2'] > 0,
+                 'Checking randomizing queries');
+  }
+  
   public static function test_magic() {
     $new_id = mysqly::insert('test', ['age' => 30, 'name' => 'Some1']);
     $age = mysqly::test_age($new_id);
