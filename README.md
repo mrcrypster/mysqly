@@ -4,7 +4,7 @@ Micro PHP mysql lib (~ 200 lines of code) with ultra powerful CRUD for faster th
 - values binding for security
 - PDO-based, no extra dependencies
 - near-zero overhead because of static class in a single file
-- built `IN` bind support: `fetch('table', ['id' => [1, 2, 3]])`
+- builtin `IN` support: `fetch('table', ['id' => [1, 2, 3]])`
 - magic methods for even faster development:
   - get column value from a table by id
   - get single row from a table by id
