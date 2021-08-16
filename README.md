@@ -113,13 +113,19 @@ $name = mysqly::users_name(45);
 ### Select single column value from a table by custom parameters
 ```php
 $name = mysqly::users_name(['col' => 'val']);
-# SELECT name FROM users WHERE col = 'val'
+# SELECT name FROM users WHERE col = 'val' LIMIT 1
 ```
 
 ### Select whole row (all columns) from table by id
 ```php
 $user = mysqly::users_(45);
-# SELECT * FROM users WHERE id = 45
+# SELECT * FROM users WHERE id = 45 LIMIT 1
+```
+
+### Select list of rows from table by parameters
+```php
+$users = mysqly::users(['age' => 35]);
+# SELECT * FROM users WHERE age = 35
 ```
 
 
