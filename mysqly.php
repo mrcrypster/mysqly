@@ -232,4 +232,16 @@ class mysqly {
       throw new PDOException($name . '() method is unknown' );
     }
   }
+  
+  
+  
+  # --- Key-value set/get & storage ---
+  
+  public static function set($key, $value) {
+    
+  }
+  
+  public static function get($key) {
+    
+  }
 }
