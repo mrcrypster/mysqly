@@ -73,6 +73,11 @@ class tests extends testy {
     self::assert(30,
                  (int)$row['age'],
                  'Checking magic column fetch, *');
+                 
+    $rows = mysqly::test(['age' => 30]);
+    self::assert(true,
+                 ($rows[0]['age'] == 30) && (count($rows) == 1),
+                 'Checking magic table list fetch, parametric');
   }
   
   public static function test_insert() {

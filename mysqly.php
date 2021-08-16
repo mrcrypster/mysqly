@@ -228,6 +228,15 @@ class mysqly {
       $row = mysqly::fetch('SELECT ' . ($col ?: '*') . ' FROM ' . $table . ' ' . $where, $bind)[0];
       return $col ? $row[$col] : $row;
     }
+    
+    # Get list of rows from table by filter
+    # ::table() - get all rows from a table
+    # ::table(['age' => 27]) - get rows by filter
+    else if ( count($args) == 0 || count($args) == 1 ) {
+      return mysqly::fetch($name, $args[0] ?: []);
+    }
+    
+    
     else {
       throw new PDOException($name . '() method is unknown' );
     }
