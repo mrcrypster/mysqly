@@ -20,7 +20,7 @@ class mysqly {
     }
     
     $params = [];
-    foreach ( $bind as $k => $v ) {
+    if ( $bind ) foreach ( $bind as $k => $v ) {
       if ( is_array($v) ) {
         $in = [];
         foreach ( $v as $i => $sub_v ) {
