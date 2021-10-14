@@ -225,7 +225,7 @@ class mysqly {
     if ( $args[0] && (count($args) == 1) && strpos($name, '_') ) {
       list($table, $col) = explode('_', $name);
       list($where, $bind) = self::filter($args[0]);
-      $row = mysqly::fetch('SELECT ' . ($col ?: '*') . ' FROM ' . $table . ' ' . $where, $bind)[0];
+      $row = mysqly::fetch('SELECT ' . ($col ? "`{$col}`" : '*') . ' FROM ' . $table . ' ' . $where, $bind)[0];
       return $col ? $row[$col] : $row;
     }
     
