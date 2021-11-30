@@ -1,4 +1,4 @@
-Micro PHP mysql lib (~ 200 lines of code) with ultra powerful CRUD for faster than ever development:
+Micro PHP mysql lib (~ 200 lines of code) with ultra powerful CRUD for fast prototyping and development:
 - parametric fetch/insert/update/delete (based on associative arrays): `fetch('table', ['col' => 10])`
 - native SQL queries support
 - values binding for security
