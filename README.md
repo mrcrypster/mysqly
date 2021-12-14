@@ -1,4 +1,4 @@
-Micro PHP mysql lib (~ 200 lines of code) with ultra powerful CRUD for fast prototyping and development:
+Micro PHP mysql lib (~ 250 lines of code) with ultra powerful CRUD for fast prototyping and development:
 - parametric fetch/insert/update/delete (based on associative arrays): `fetch('table', ['col' => 10])`
 - native SQL queries support
 - values binding for security
@@ -8,7 +8,8 @@ Micro PHP mysql lib (~ 200 lines of code) with ultra powerful CRUD for fast prot
 - magic methods for even faster development:
   - get column value from a table by id
   - get single row from a table by id
-  - get count/avg/sum/max/min from table by parametric filter (implementing in #6)
+  - get count of rows from table using parametric query or SQL
+  - get avg/sum/max/min from table by parametric filter (implementing in #6)
 
 # Installation
 Just download latest version of lib:
