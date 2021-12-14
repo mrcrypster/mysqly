@@ -11,12 +11,13 @@ class mysqly {
   # --- Internal implementations
   
   # Execute query
-  private static function exec($sql, $bind = []) {
+  public static function exec($sql, $bind = []) {
     if ( !self::$db ) {
       if ( !self::$auth ) {
         self::$auth = @include '/var/lib/mysqly/.auth.php';
       }
       self::$db = new PDO('mysql:host=' . self::$auth['host'] . ';dbname=' . self::$auth['db'], self::$auth['user'], self::$auth['pwd']);
+      self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
     
     $params = [];
@@ -37,10 +38,6 @@ class mysqly {
     
     $statement = self::$db->prepare($sql);
     $statement->execute($params);
-    
-    if ( (int)$statement->errorInfo()[0] ) {
-      throw new Exception($statement->errorInfo()[2]);
-    }
     
     return $statement;
   }

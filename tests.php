@@ -6,7 +6,29 @@ require __DIR__ . '/mysqly.php';
 class tests extends testy {
   protected static function prepare() {
     mysqly::auth('test', 'test', 'test');
-    mysqly::fetch('TRUNCATE test');
+    mysqly::exec('TRUNCATE test');
+  }
+  
+  public static function test_exec() {
+    mysqly::insert('test', ['age' => 20, 'name' => 'name 1']);
+    mysqly::exec('UPDATE test set age = 10');
+    
+    self::assert(1,
+                 mysqly::count('test', ['age' => 10]),
+                 'Checking exec');
+  }
+  
+  public static function test_error() {
+    try {
+      mysqly::exec('SELECT * FROM unknown');
+    }
+    catch ( PDOException $e ) {
+      $message = $e->getMessage();
+    }
+    
+    self::assert(true,
+                 strpos($message, 'not found') !== false,
+                 'Checking error handling');
   }
   
   public static function test_now() {
