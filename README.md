@@ -9,7 +9,7 @@ Micro PHP mysql lib (~ 250 lines of code) with ultra powerful CRUD for fast prot
   - get column value from a table by id
   - get single row from a table by id
   - get count of rows from table using parametric query or SQL
-  - get avg/sum/max/min from table by parametric filter (implementing in #6)
+  - get avg/sum/max/min from table by parametric filter (implementing in #12)
 
 # Installation
 Just download latest version of lib:
