@@ -170,3 +170,8 @@ To remove all rows with age = 46:
 ```php
 mysqly::remove('users', ['age' => 46]);
 ```
+
+# Exec SQL queries directly
+```php
+mysqly::exec('UPDATE stats SET val = val + 1 WHERE key = :key', [':key' => 'events']);
+```
