@@ -104,13 +104,13 @@ class mysqly {
   # ::fetch('table', ['age' => 27]);
   # ::fetch('table', $id);
   # ::fetch('SELECT id, name FROM table WHERE age = :age', [':age' => 27])
-  public static function fetch($sql_or_table, $bind_or_filter = []) {
+  public static function fetch($sql_or_table, $bind_or_filter = [], $select_what = '*') {
     if ( strpos($sql_or_table, ' ') || (strpos($sql_or_table, 'SELECT ') === 0) ) {
       $sql = $sql_or_table;
       $bind = $bind_or_filter;
     }
     else {
-      $sql = "SELECT * FROM {$sql_or_table}";
+      $sql = "SELECT {$select_what} FROM {$sql_or_table}";
       $order = '';
       
       if ( $bind_or_filter ) {
@@ -171,6 +171,14 @@ class mysqly {
     $rows = self::fetch($sql_or_table, $bind_or_filter);
     foreach ( $rows as $row ) $list[array_shift($row)] = array_shift($row);
     return $list;
+  }
+  
+  # Get count by parametric query or SQL
+  # ::count('table', ['col' => 'val'])
+  # ::count('SELECT count(* FROM table WHERE age = :age', [':age' => 27])
+  public static function count($sql_or_table, $bind_or_filter = []) {
+    $rows = self::fetch($sql_or_table, $bind_or_filter, 'count(*)');
+    return intval(array_shift(array_shift($rows)));
   }
   
   # Insert new data & return last insert ID (if any auto_increment column)

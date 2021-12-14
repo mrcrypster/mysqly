@@ -101,6 +101,18 @@ $row = mysqly::random('users', ['age' => 25]);
 # SELECT * FROM users WHERE age = 25 ORDER BY RAND() LIMIT 1
 ```
 
+### Count rows based on parametric query
+
+```php
+$total = mysqly::count('users', ['age' => 25]);
+# SELECT count(*) FROM users WHERE age = 25
+```
+or SQL:
+
+```php
+$total = mysqly::count('SELECT count(*) from users');
+```
+
 
 # Magic fetch
 Set of magic methods (not directly defined, but dynamically handled) allows quick access in the following cases:

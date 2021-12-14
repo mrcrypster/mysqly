@@ -5,7 +5,7 @@ require __DIR__ . '/mysqly.php';
 
 class tests extends testy {
   protected static function prepare() {
-    mysqly::auth('root', '', 'test');
+    mysqly::auth('test', 'test', 'test');
     mysqly::fetch('TRUNCATE test');
   }
   
@@ -54,6 +54,20 @@ class tests extends testy {
     self::assert(true,
                  $totals['name 1'] > 0 && $totals['name 2'] > 0,
                  'Checking randomizing queries');
+  }
+  
+  public static function test_count() {
+    mysqly::insert('test', ['age' => 71, 'name' => 'name 1']);
+    mysqly::insert('test', ['age' => 71, 'name' => 'name 2']);
+    
+    
+    self::assert(2,
+                 mysqly::count('test', ['age' => 71]),
+                 'Checking count parametric queries');
+                 
+    self::assert(2,
+                 mysqly::count('SELECT count(*) FROM test WHERE age = 71'),
+                 'Checking count SQL queries');
   }
   
   public static function test_magic() {
