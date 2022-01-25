@@ -96,6 +96,10 @@ class mysqly {
     self::$auth = ['user' => $user, 'pwd' => $pwd, 'db' => $db, 'host' => $host];
   }
   
+  public static function now() {
+    return self::fetch('SELECT NOW() now')[0]['now'];
+  }
+  
   
   # Fetch array of rows based on SQL or parametric query
   # ::fetch('table', ['age' => 27]);
@@ -178,8 +182,6 @@ class mysqly {
     return intval(array_shift(array_shift($rows)));
   }
   
-  # Insert new data & return last insert ID (if any auto_increment column)
-  # ::insert('table', ['col' => 'val']);
   public static function insert($table, $data, $ignore = false) {
     $bind = [];
     $values = self::values($data, $bind);
@@ -195,6 +197,29 @@ class mysqly {
     $values = self::values($data, $bind);
     $sql = "INSERT INTO {$table} SET {$values} ON DUPLICATE KEY UPDATE {$values}";
     self::exec($sql, $bind);
+  }
+  
+  public static function multi_insert($table, $rows, $ignore = false) {
+    $bind = [];
+    
+    $cols = array_keys($rows[0]);
+    $cols = implode(',', $cols);
+    
+    foreach ( $rows as $r => $row ) {
+      $values[] = '(' . implode(',', array_map(function($c) use($r) { return ":r{$r}{$c}"; }, range(0, count($row)-1))) . ')';
+      
+      $c = 0;
+      foreach ( $row as $v ) {
+        $bind[":r{$r}{$c}"] = $v;
+        $c++;
+      }
+    }
+    
+    $values = implode(',', $values);
+    
+    $sql = 'INSERT ' . ($ignore ? ' IGNORE ' : '') . "INTO {$table}({$cols}) VALUES{$values}";
+    self::exec($sql, $bind);
+    return self::$db->lastInsertId();
   }
   
   # Update data

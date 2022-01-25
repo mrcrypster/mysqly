@@ -32,7 +32,7 @@ class tests extends testy {
   }
   
   public static function test_now() {
-    $now = mysqly::fetch('SELECT NOW() now')[0]['now'];
+    $now = mysqly::now();
     self::assert(true,
                  preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/', $now) == 1,
                  'Checking current timestamp');
@@ -127,6 +127,19 @@ class tests extends testy {
     self::assert(true,
                  $new_id > 0,
                  'Checking return ID');
+  }
+  
+  public static function test_multi_insert() {
+    $pre_count = (int)mysqly::fetch('SELECT count(*) t FROM test')[0]['t'];
+    mysqly::multi_insert('test', [
+      ['age' => 27, 'name' => 'Test1'],
+      ['age' => 27, 'name' => 'Test2'],
+      ['age' => 27, 'name' => 'Test3']
+    ]);
+    $post_count = (int)mysqly::fetch('SELECT count(*) t FROM test')[0]['t'];
+    self::assert($pre_count + 3,
+                 $post_count,
+                 'Checking multiple rows insert');
   }
   
   public static function test_insert_update() {
