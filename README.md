@@ -37,5 +37,5 @@ mysqly::update(
   ['settings.colors.background' => 'green'] # update "colors.background" key for "settings" JSON column
 );
 
-$rows = mysqly::fetch('SELECT settings as data_json FROM table'); # automatically decode "settings" column value from JSON string
+$rows = mysqly::fetch('SELECT settings as data_json FROM table'); # automatically decode "settings" column JSON value
 ```
