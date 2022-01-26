@@ -1,6 +1,6 @@
 [Mysqly](https://mysqly.com/) is a PHP Mysql framework for efficient development.
 
-![Mysqly logo](/mysqly.png)
+[![Mysqly logo](/mysqly.png)](https://mysqly.com/)
 
 # Installation
 ```bash
