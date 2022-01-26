@@ -3,6 +3,8 @@
 require __DIR__ . '/../testy/testy.php';
 require __DIR__ . '/mysqly.php';
 
+class db1 extends mysqly {}
+
 class tests extends testy {
   protected static function prepare() {
     mysqly::auth('test', 'test', 'test');
@@ -29,6 +31,14 @@ class tests extends testy {
     self::assert(true,
                  strpos($message, 'not found') !== false,
                  'Checking error handling');
+  }
+  
+  public static function test_multiple_connections() {
+    
+    $now = db1::now();
+    self::assert(true,
+                 preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}/', $now) == 1,
+                 'Checking multiple DB connections');
   }
   
   public static function test_now() {
@@ -90,6 +100,71 @@ class tests extends testy {
     self::assert(2,
                  mysqly::count('SELECT count(*) FROM test WHERE age = 71'),
                  'Checking count SQL queries');
+  }
+  
+  public static function test_aggregations() {
+    mysqly::remove('test', ['name' => 'names_agg']);
+    mysqly::insert('test', ['age' => 100, 'name' => 'names_agg']);
+    mysqly::insert('test', ['age' => 101, 'name' => 'names_agg']);
+    mysqly::insert('test', ['age' => 101, 'name' => 'names_agg']);
+    mysqly::insert('test', ['age' => 102, 'name' => 'names_agg']);
+    
+    
+    self::assert((float)101,
+                 (float)mysqly::avg_age('test', ['name' => 'names_agg']),
+                 'Checking average aggregation');
+                 
+    self::assert((float)102,
+                 (float)mysqly::max_age('test', ['name' => 'names_agg']),
+                 'Checking max aggregation');
+                 
+    self::assert((float)100,
+                 (float)mysqly::min_age('test', ['name' => 'names_agg']),
+                 'Checking min aggregation');
+  }
+  
+  public static function test_increments() {
+    mysqly::remove('test', ['name' => 'name_inc']);
+    mysqly::insert('test', ['age' => 200, 'name' => 'names_inc']);
+    mysqly::increment('age', 'test', ['name' => 'names_inc']);
+
+    
+    self::assert((int)201,
+                 (int)mysqly::test_age(['name' => 'names_inc']),
+                 'Checking increment');
+  }
+  
+  public static function test_decrements() {
+    mysqly::remove('test', ['name' => 'name_dec']);
+    mysqly::insert('test', ['age' => 200, 'name' => 'name_dec']);
+    mysqly::decrement('age', 'test', ['name' => 'name_dec']);
+
+    
+    self::assert((int)199,
+                 (int)mysqly::test_age(['name' => 'name_dec']),
+                 'Checking decrement');
+  }
+  
+  public static function test_transactions() {
+    mysqly::remove('test', ['name' => 'transaction']);
+    
+    mysqly::transaction(function() {
+      mysqly::insert('test', ['name' => 'transaction']);
+      return false;
+    });
+    
+    self::assert((int)0,
+                 (int)mysqly::count('test', ['name' => 'transaction']),
+                 'Checking rollback');
+                 
+    mysqly::transaction(function() {
+      mysqly::insert('test', ['name' => 'transaction']);
+      return true;
+    });
+    
+    self::assert((int)1,
+                 (int)mysqly::count('test', ['name' => 'transaction']),
+                 'Checking commit');
   }
   
   public static function test_magic() {
@@ -198,6 +273,23 @@ class tests extends testy {
     self::assert(3,
                  count($rows),
                  'Checking SQL IN binding');
+  }
+  
+  public static function test_json() {
+    mysqly::remove('test', ['id' => 300]);
+    mysqly::insert('test', ['id' => 300, 'name' => json_encode(['json' => 'ok'])]);
+    
+    $rows = mysqly::fetch('SELECT name name_json FROM test WHERE id = 300');
+    self::assert('ok',
+                 $rows[0]['name_json']['json'],
+                 'Checking automatic JSON deconversion');
+    
+    
+    mysqly::update('test', ['id' => 300], ['name.json' => 'updated']);
+    $rows = mysqly::fetch('SELECT name name_json FROM test WHERE id = 300');
+    self::assert('updated',
+                 $rows[0]['name_json']['json'],
+                 'Checking automatic JSON attributes update');
   }
 }
 
