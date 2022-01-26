@@ -12,7 +12,7 @@ wget https://mysqly.com/mysqly.php
 - [Official website](https://mysqly.com/)
 - [Learn advanced Mysql usage with PHP](https://mysqly.com/educate)
 
-# Usage and overview
+# Usage and features overview
 ```php
 require 'mysqly.php'; # include library (single file)
 mysqly::auth('user', 'pwd', 'db', '127.0.0.1'); # connect to Mysql server
