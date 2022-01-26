@@ -1,37 +1,25 @@
-Micro PHP mysql lib (~ 250 lines of code) with ultra powerful CRUD for fast prototyping and development:
-- parametric fetch/insert/update/delete (based on associative arrays): `fetch('table', ['col' => 10])`
-- native SQL queries support
-- values binding for security
-- PDO-based, no extra dependencies
-- near-zero overhead because of static class in a single file
-- builtin `IN` support: `fetch('table', ['id' => [1, 2, 3]])`
-- magic methods for even faster development:
-  - get column value from a table by id
-  - get single row from a table by id
-  - get count of rows from table using parametric query or SQL
+[Mysqly](https://mysqly.com/) is a PHP Mysql framework for efficient development.
+
+![Mysqly logo](/mysqly.png)
 
 # Installation
-Just download latest version of lib:
 ```bash
-wget https://raw.githubusercontent.com/mrcrypster/mysqly/main/mysqly.php
+wget https://mysqly.com/mysqly.php
 ```
 
 # Usage
-Include:
 ```php
 require 'mysqly.php';
+mysqly::auth('user', 'pwd', 'db', '127.0.0.1');
+print_r( mysqly::fetch('SELECT * FROM users') );
 ```
 
-Authenticate:
-```php
-mysqly::auth('user', 'pwd', 'db', 'localhost');
-```
+# Documentation
+- [Official website](https://mysqly.com/)
 
-Fetch something:
-```php
-$rows = mysqly::fetch('SELECT NOW()');
-print_r( $rows );
-```
+
+
+
 
 # Better authentication
 To make authentication more secure, you can create auth file `/var/lib/mysqly/.auth.php` with auth data:
