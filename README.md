@@ -1,4 +1,4 @@
-[Mysqly](https://mysqly.com/) is a full-features small overhead PHP data framework for Mysql built for fast and efficient development.
+[Mysqly](https://mysqly.com/) is a full-featured opensource small-overhead PHP data framework for Mysql built for fast and efficient development.
 
 [![Mysqly logo](/mysqly.png)](https://mysqly.com/)
 
@@ -7,15 +7,31 @@
 wget https://mysqly.com/mysqly.php
 ```
 
-# Usage
+# Usage and overview
 ```php
-require 'mysqly.php';
-mysqly::auth('user', 'pwd', 'db', '127.0.0.1');
-print_r( mysqly::fetch('SELECT * FROM users') );
+require 'mysqly.php'; # include library (single file)
+mysqly::auth('user', 'pwd', 'db', '127.0.0.1'); # connect to Mysql server
+
+
+// Dynamic methods for table names
+$users = mysqly::users(['age' => 25]); # SELECT * FROM users WHERE age = 25
+$user = mysqly::users_(6); # SELECT * FROM users WHERE id = 6 LIMIT 1
+
+
+// retrieve key-values and lists
+$ages = mysqly::key_vals('SELECT id, age FROM users WHERE age = :age', ['age' => 25]);
+# [
+#   [1 => 'm'],
+#   [2 => 'f'],
+# ]
+
+
+// Ready to use job queue, caching and key/value store
 ```
 
 # Documentation
 - [Official website](https://mysqly.com/)
+- [Learn advanced Mysql usage with PHP](https://mysqly.com/educate)
 
 
 
@@ -32,56 +48,6 @@ To make authentication more secure, you can create auth file `/var/lib/mysqly/.a
 ```
 
 # Fetch data
-### Parametric fetch
-```php
-$users = mysqly::fetch('users', [ 'age' => 45 ]);
-# SELECT * FROM users WHERE age = 45
-```
-
-### Fetch rows from table by ID
-```php
-$user = mysqly::fetch('users', 45)[0]; # ! you'll have to select only first row from results
-# SELECT * FROM users WHERE id = 45
-```
-
-### Parametric sorting
-```php
-$users = mysqly::fetch('users', [ 'age' => 45, 'order_by' => 'id DESC' ]);
-# SELECT * FROM users WHERE age = 45 ORDER BY id DESC
-```
-
-### Secure parametric `IN` support
-```php
-$users = mysqly::fetch('users', [ 'age' => [45, 46, 47] ]);
-# SELECT * FROM users WHERE age IN (45, 46, 47)
-```
-
-### Fetch using standard SQL
-```php
-$users = mysqly::fetch('SELECT * FROM users');
-```
-
-### Binding
-```php
-$users = mysqly::fetch('SELECT * FROM users WHERE age = :age', [ ':age' => $_GET['age'] ]);
-```
-
-### Secure `IN` binding
-```php
-$users = mysqly::fetch('SELECT * FROM users WHERE age IN (:ages)', [ 'ages' => [45, 46, 47] ]);
-# SELECT * FROM users WHERE age IN (45, 46, 47)
-```
-
-### Fetch single column list (one-dimensional array)
-```php
-$ids = mysqly::array('SELECT id FROM users');
-```
-
-### Fetch key-value pairs (one-dimensional associative array)
-```php
-$ages = mysqly::key_vals('SELECT id, age FROM users');
-# example resulting array: [ 1 => 45, 2 => 46 ... ]
-```
 
 ### Fetch random row based on parametric query
 ```php
@@ -103,24 +69,6 @@ $total = mysqly::count('SELECT count(*) from users');
 
 
 # Magic fetch
-Set of magic methods (not directly defined, but dynamically handled) allows quick access in the following cases:
-### Select single column value from a table by id
-```php
-$name = mysqly::users_name(45);
-# SELECT name FROM users WHERE id = 45
-```
-
-### Select single column value from a table by custom parameters
-```php
-$name = mysqly::users_name(['col' => 'val']);
-# SELECT name FROM users WHERE col = 'val' LIMIT 1
-```
-
-### Select whole row (all columns) from table by id
-```php
-$user = mysqly::users_(45);
-# SELECT * FROM users WHERE id = 45 LIMIT 1
-```
 
 ### Select list of rows from table by parameters
 ```php
