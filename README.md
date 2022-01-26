@@ -1,7 +1,7 @@
 [Mysqly](https://mysqly.com/) is a full-featured opensource small-overhead PHP data framework for Mysql built for fast and efficient development.
 
 <p align="center">
-  [![Mysqly logo](/mysqly.png)](https://mysqly.com/)
+  <a href="https://mysqly.com/"><img src="/mysqly.png"/></a>
 </p>
 
 # Installation
