@@ -31,5 +31,7 @@ $ages = mysqly::key_vals('SELECT id, age FROM users WHERE age = :age', ['age' =>
 # ]
 
 
-// Ready to use job queue, caching and key/value store
+// Native JSON support
+mysqly::update('table', ['id' => 1], ['settings.colors.background' => 'green']); # update "colors.background" key for "settings" JSON column
+mysqly::fetch('SELECT settings as data_json FROM table'); # will automatically expand "settings" column value (JSON string) into associative array
 ```
