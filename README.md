@@ -1,4 +1,4 @@
-[Mysqly](https://mysqly.com/) is a PHP Mysql framework for efficient development.
+[Mysqly](https://mysqly.com/) is a full-features small overhead PHP data framework for Mysql built for fast and efficient development.
 
 [![Mysqly logo](/mysqly.png)](https://mysqly.com/)
 
