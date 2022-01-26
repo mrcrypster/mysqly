@@ -9,6 +9,9 @@
 wget https://mysqly.com/mysqly.php
 ```
 
+- [Official website](https://mysqly.com/)
+- [Learn advanced Mysql usage with PHP](https://mysqly.com/educate)
+
 # Usage and overview
 ```php
 require 'mysqly.php'; # include library (single file)
@@ -30,7 +33,3 @@ $ages = mysqly::key_vals('SELECT id, age FROM users WHERE age = :age', ['age' =>
 
 // Ready to use job queue, caching and key/value store
 ```
-
-# Documentation
-- [Official website](https://mysqly.com/)
-- [Learn advanced Mysql usage with PHP](https://mysqly.com/educate)
