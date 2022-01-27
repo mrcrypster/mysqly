@@ -24,7 +24,7 @@ $user = mysqly::users_(6); # SELECT * FROM users WHERE id = 6 LIMIT 1
 // And many more features ↓
 ```
 
-# Features & documentation
+# All features & documentation
 
 <ul class="contents">
   <li>Procedural style implementation</li>
