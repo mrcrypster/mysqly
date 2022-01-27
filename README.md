@@ -7,6 +7,8 @@
 - [Official website](https://mysqly.com/)
 - [Learn advanced Mysql usage with PHP](https://mysqly.com/educate)
 
+[![Download mysqly](https://img.shields.io/sourceforge/dt/mysqly.svg)](https://sourceforge.net/projects/mysqly/files/latest/download)
+
 # Install
 ```bash
 wget https://mysqly.com/mysqly.php
