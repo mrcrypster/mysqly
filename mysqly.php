@@ -1,6 +1,6 @@
 <?php
 
-# SRC: https://raw.githubusercontent.com/mrcrypster/mysqly/main/mysqly.php
+# https://github.com/mrcrypster/mysqly
 
 class mysqly {
   private static $db;
