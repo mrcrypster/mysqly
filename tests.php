@@ -291,6 +291,123 @@ class tests extends testy {
                  $rows[0]['name_json']['json'],
                  'Checking automatic JSON attributes update');
   }
+  
+  public static function test_export() {
+    @unlink('/tmp/test.csv');
+    mysqly::export_csv('/tmp/test.csv', 'test', [], 'id, name');
+    $f = fopen('/tmp/test.csv', 'r');
+    while ( $row = fgetcsv($f) ) {
+      $csv[] = $row;
+    }
+    
+    self::assert(true,
+                 count($csv) > 1 && count($csv[0]) > 1,
+                 'Checking CSV export');
+                 
+                 
+    @unlink('/tmp/test.tsv');
+    mysqly::export_tsv('/tmp/test.tsv', 'test');
+    $f = fopen('/tmp/test.tsv', 'r');
+    while ( $row = fgetcsv($f, null, "\t") ) {
+      $tsv[] = $row;
+    }
+    
+    self::assert(true,
+                 count($tsv) > 1 && count($tsv[0]) > 1,
+                 'Checking TSV export');
+  }
+  
+  public static function test_key_value_storage() {
+    mysqly::set('test', 'hi');
+    self::assert('hi',
+                 mysqly::get('test'),
+                 'Checking key_value storage insert');
+                 
+    mysqly::set('test', 'ok');
+    self::assert('ok',
+                 mysqly::get('test'),
+                 'Checking key_value storage update');
+                 
+    mysqly::set('test', 'ok1', '2');
+    self::assert('ok1',
+                 mysqly::get('test', '2'),
+                 'Checking key_value storage spaces');
+    self::assert('ok',
+                 mysqly::get('test'),
+                 'Checking key_value storage spaces');
+
+    mysqly::unset('test');
+    self::assert(NULL,
+                 mysqly::get('test'),
+                 'Checking key_value storage delete');
+  }
+  
+  public static function test_cache() {
+    mysqly::exec('DROP TABLE _cache');
+    
+    mysqly::uncache('a1');
+    
+    $calls = 0;
+    $gen = function() use ( &$calls) { $calls++; return 25; };
+    
+    mysqly::cache('a1', $gen);
+    $value = mysqly::cache('a1', $gen);
+    
+    self::assert(25,
+                 $value,
+                 'Checking cached value');
+    
+    self::assert(25,
+                 mysqly::cache('a1', function() { return 26; }),
+                 'Checking caching engine');
+    
+    self::assert(1,
+                 $calls,
+                 'Checking caching engine');
+    
+    mysqly::uncache('a1');
+    self::assert(null,
+                 mysqly::cache('a1', function() { return null; }),
+                 'Checking cache removal');
+  }
+  
+  public static function test_queue() {
+    mysqly::exec('DROP TABLE _queue');
+    
+    $job = mysqly::read('sample');
+    self::assert(null,
+                 $job,
+                 'Checking queue, absent jobs');
+    
+    mysqly::write('sample', ['some' => 'data']);
+    $job = mysqly::read('sample');
+    self::assert('data',
+                 $job['some'],
+                 'Checking queue job');
+    
+    $job = mysqly::read('sample');
+    self::assert(null,
+                 $job,
+                 'Checking queue, absent jobs');
+                 
+                 
+    mysqly::write('sample', '1');
+    mysqly::write('sample', '2');
+    
+    try { mysqly::on('sample', function($j) { throw new Exception($j); }); }
+    catch ( Exception $e ) {
+      self::assert('1',
+                 $e->getMessage(),
+                 'Checking queue jobs order and subscription');
+    }
+    
+    try { mysqly::on('sample', function($j) { throw new Exception($j); }); }
+    catch ( Exception $e ) {
+      self::assert('2',
+                 $e->getMessage(),
+                 'Checking queue jobs order and subscription');
+    }
+  }
 }
 
 tests::run();

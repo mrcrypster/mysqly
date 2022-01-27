@@ -124,7 +124,7 @@ class mysqly {
   
   /* Data retrieval */
   
-  public static function fetch($sql_or_table, $bind_or_filter = [], $select_what = '*') {
+  public static function fetch_cursor($sql_or_table, $bind_or_filter = [], $select_what = '*') {
     if ( strpos($sql_or_table, ' ') || (strpos($sql_or_table, 'SELECT ') === 0) ) {
       $sql = $sql_or_table;
       $bind = $bind_or_filter;
@@ -157,7 +157,12 @@ class mysqly {
       $sql .= $order;
     }
     
-    $statement = self::exec($sql, $bind);
+    return self::exec($sql, $bind);
+  }
+  
+  public static function fetch($sql_or_table, $bind_or_filter = [], $select_what = '*') {
+    
+    $statement = self::fetch_cursor($sql_or_table, $bind_or_filter, $select_what);
     $rows = $statement->fetchAll(PDO::FETCH_ASSOC);
 
     $list = [];
@@ -264,6 +269,30 @@ class mysqly {
   }
   
   
+  
+  /* Data export */
+  
+  public static function export_csv($file, $sql_or_table, $bind_or_filter = [], $select_what = '*') {
+    $cursor = self::fetch_cursor($sql_or_table, $bind_or_filter, $select_what);
+    $f = fopen($file, 'w');
+    while ( $row = $cursor->fetch() ) {
+      fputcsv($f, $row);
+    }
+    
+    fclose($f);
+  }
+  
+  public static function export_tsv($file, $sql_or_table, $bind_or_filter = [], $select_what = '*') {
+    $cursor = self::fetch_cursor($sql_or_table, $bind_or_filter, $select_what);
+    $f = fopen($file, 'w');
+    while ( $row = $cursor->fetch() ) {
+      fputcsv($f, $row, "\t");
+    }
+    
+    fclose($f);
+  }
+  
+  
 
   /* Data update */  
 
@@ -318,13 +347,134 @@ class mysqly {
   
   
   
-  # --- Key-value set/get & storage ---
+  /* Key-value set/get & storage */
   
-  public static function set($key, $value) {
-    
+  protected static function key_value_table($space) {
+    return '_kv_' . $space;
   }
   
-  public static function get($key) {
+  public static function get($key, $space = 'default') {
+    $table = self::key_value_table($space);
     
+    try {
+      $value = self::fetch($table, ['key' => $key], 'value')[0]['value'];
+      return $value;
+    }
+    catch (PDOException $e) {
+      return;
+    }
+  }
+  
+  public static function set($key, $value, $space = 'default') {
+    $table = self::key_value_table($space);
+    
+    try {
+      self::insert_update($table, ['key' => $key, 'value' => $value]);
+    }
+    catch (PDOException $e) {
+      if ( strpos($e->getMessage(), "doesn't exist") ) {
+        self::exec("CREATE TABLE {$table}(`key` varchar(128) PRIMARY KEY, `value` TEXT) ENGINE = INNODB");
+        self::insert($table, ['key' => $key, 'value' => $value]);
+      }
+    }
+  }
+  
+  public static function unset($key, $space = 'default') {
+    $table = self::key_value_table($space);
+    
+    try {
+      self::remove($table, ['key' => $key]);
+    }
+    catch (PDOException $e) {}
+  }
+  
+  
+  
+  /* Cache storage */
+
+  public static function cache($key, $populate, $ttl = 60) {
+    $key = sha1($key);
+    
+    try {
+      $data = mysqly::fetch('_cache', ['key' => $key])[0];
+    }
+    catch ( PDOException $e ) {
+      if ( strpos($e->getMessage(), "doesn't exist") ) {
+        self::exec("CREATE TABLE _cache(`key` varchar(40) PRIMARY KEY, `expire` int unsigned, `value` TEXT) ENGINE = INNODB");
+      }
+    }
+    
+    if ( !$data || ($data['expire'] < time()) ) {
+      $value = $populate();
+      
+      try {
+        mysqly::insert_update('_cache', [
+          'key' => $key,
+          'expire' => time() + $ttl,
+          'value' => json_encode($value)
+        ]);
+      }
+      catch ( PDOException $e ) {}
+      
+      return $value;
+    }
+    else {
+      return json_decode($data['value'], 1);
+    }
+  }
+  
+  public static function uncache($key) {
+    $key = sha1($key);
+    
+    try {
+      mysqly::remove('_cache', ['key' => $key]);
+    }
+    catch ( PDOException $e ) {}
+  }
+  
+  
+  
+  /* Cache storage */
+  
+  public static function write($event, $data) {
+    try {
+      self::insert('_queue', ['event' => $event, 'data' => json_encode($data)]);
+    }
+    catch ( PDOException $e ) {
+      if ( strpos($e->getMessage(), "doesn't exist") ) {
+        self::exec("CREATE TABLE _queue(`id` SERIAL PRIMARY KEY, `event` varchar(32), `data` TEXT, KEY event_id(`event`, `id`)) ENGINE = INNODB");
+        self::insert('_queue', ['event' => $event, 'data' => json_encode($data)]);
+      }
+    }
+  }
+  
+  public static function read($event) {
+    try {
+      mysqly::exec('SET autocommit = 0');
+      mysqly::exec('LOCK TABLES _queue WRITE');
+      
+      $row = self::fetch('SELECT * FROM _queue WHERE event = :event ORDER BY id ASC LIMIT 1 FOR UPDATE', [':event' => $event])[0];
+      if ( $row ) {
+        self::remove('_queue', ['id' => $row['id']]);
+        return json_decode($row['data'], 1);
+      }
+      
+      self::exec('COMMIT');
+      self::exec('UNLOCK TABLES');
+    }
+    catch ( PDOException $e ) {}
+  }
+  
+  public static function on($event, $cb) {
+    while ( true ) {
+      $data = self::read($event);
+      
+      if ( $data === null ) {
+        usleep(1000);
+        continue;
+      }
+      
+      $cb($data);
+    }
   }
 }
