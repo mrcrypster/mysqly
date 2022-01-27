@@ -470,17 +470,15 @@ class mysqly {
   
   public static function read($event) {
     try {
-      self::exec('SET autocommit = 0');
-      self::exec('LOCK TABLES _queue WRITE');
+      self::exec('START TRANSACTION');
       
-      $row = self::fetch('SELECT * FROM _queue WHERE event = :event ORDER BY id ASC LIMIT 1 FOR UPDATE', [':event' => $event])[0];
+      $row = self::fetch('SELECT * FROM _queue WHERE event = :event ORDER BY id ASC LIMIT 1 FOR UPDATE SKIP LOCKED', [':event' => $event])[0];
       if ( $row ) {
         self::remove('_queue', ['id' => $row['id']]);
         $return = json_decode($row['data'], 1);
       }
       
       self::exec('COMMIT');
-      self::exec('UNLOCK TABLES');
       
       return $return;
     }
