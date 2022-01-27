@@ -343,7 +343,7 @@ class tests extends testy {
   }
   
   public static function test_cache() {
-    mysqly::exec('DROP TABLE _cache');
+    mysqly::exec('DROP TABLE IF EXISTS _cache');
     
     mysqly::uncache('a1');
     
@@ -372,7 +372,7 @@ class tests extends testy {
   }
   
   public static function test_queue() {
-    mysqly::exec('DROP TABLE _queue');
+    mysqly::exec('DROP TABLE IF EXISTS _queue');
     
     $job = mysqly::read('sample');
     self::assert(null,
@@ -407,6 +407,47 @@ class tests extends testy {
                  $e->getMessage(),
                  'Checking queue jobs order and subscription');
     }
+  }
+  
+  public static function test_auto_create() {
+    mysqly::exec('DROP TABLE IF EXISTS test1');
+    
+    try {
+      mysqly::insert('test1', ['id' => 25]);
+    }
+    catch ( PDOException $e ) {
+      self::assert(true,
+                 strpos($e->getMessage(), "doesn't exist") !== false,
+                 'Checking table not being created');
+    }
+    
+    mysqly::auto_create(true);
+    mysqly::insert('test1', ['id' => 25, 'name' => 'Donald']);
+    $row = mysqly::test1_(25);
+    self::assert('Donald',
+                 $row['name'],
+                 'Checking table auto create');
+                 
+    mysqly::update('test1', ['id' => 25], ['age' => 97]);
+    $row = mysqly::test1_(25);
+    
+    self::assert('97',
+                 $row['age'],
+                 'Checking table auto alter');
+  
+  
+    mysqly::exec('DROP TABLE IF EXISTS test2');
+    mysqly::insert_update('test2', ['id' => 1]);
+    mysqly::insert_update('test2', ['id' => 1, 'name' => 'Joe']);
+    $row = mysqly::test2_(1);
+    self::assert('1',
+                 $row['id'],
+                 'Checking table insert_update create/alter');
+                 
+    self::assert('Joe',
+                 $row['name'],
+                 'Checking table insert_update create/alter');
+    
   }
 }
 

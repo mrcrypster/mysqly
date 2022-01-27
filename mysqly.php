@@ -6,6 +6,7 @@ class mysqly {
   private static $db;
   private static $auth = [];
   protected static $auth_file = '/var/lib/mysqly/.auth.php';
+  protected static $auto_create = false;
   
   
   
@@ -234,7 +235,14 @@ class mysqly {
     $bind = [];
     $values = self::values($data, $bind);
     $sql = 'INSERT ' . ($ignore ? ' IGNORE ' : '') . "INTO {$table} SET {$values}";
-    self::exec($sql, $bind);
+    
+    try {
+      self::exec($sql, $bind);
+    }
+    catch ( PDOException $e ) {
+      self::handle_insert_exception($e, $table, $data, $ignore);
+    }
+    
     return self::$db->lastInsertId();
   }
   
@@ -242,7 +250,13 @@ class mysqly {
     $bind = [];
     $values = self::values($data, $bind);
     $sql = "INSERT INTO {$table} SET {$values} ON DUPLICATE KEY UPDATE {$values}";
-    self::exec($sql, $bind);
+    
+    try {
+      self::exec($sql, $bind);
+    }
+    catch ( PDOException $e ) {
+      self::handle_insert_update_exception($e, $table, $data);
+    }
   }
   
   public static function multi_insert($table, $rows, $ignore = false) {
@@ -301,9 +315,13 @@ class mysqly {
     $values = self::values($data, $bind);
     
     $sql = "UPDATE {$table} SET {$values} {$where}";
-    $statement = self::exec($sql, $bind);
     
-    return self::$db->lastInsertId();
+    try {
+      $statement = self::exec($sql, $bind);
+    }
+    catch ( PDOException $e ) {
+      self::handle_update_exception($e, $table, $filter, $data);
+    }
   }
   
   public static function remove($table, $filter) {
@@ -321,7 +339,7 @@ class mysqly {
     if ( $args[0] && (count($args) == 1) && strpos($name, '_') ) {
       list($table, $col) = explode('_', $name);
       list($where, $bind) = self::filter($args[0]);
-      $row = mysqly::fetch('SELECT ' . ($col ? "`{$col}`" : '*') . ' FROM ' . $table . ' ' . $where, $bind)[0];
+      $row = self::fetch('SELECT ' . ($col ? "`{$col}`" : '*') . ' FROM ' . $table . ' ' . $where, $bind)[0];
       return $col ? $row[$col] : $row;
     }
     
@@ -330,13 +348,13 @@ class mysqly {
       list($agr, $col) = explode('_', $name);
       $table = $args[0];
       list($where, $bind) = self::filter($args[1]);
-      $row = mysqly::fetch('SELECT ' . $agr . '( ' . $col . ') FROM ' . $table . ' ' . $where, $bind)[0];
+      $row = self::fetch('SELECT ' . $agr . '( ' . $col . ') FROM ' . $table . ' ' . $where, $bind)[0];
       return array_shift($row);
     }
     
     # get list of rows from table
     else if ( count($args) == 0 || count($args) == 1 ) {
-      return mysqly::fetch($name, $args[0] ?: []);
+      return self::fetch($name, $args[0] ?: []);
     }
     
     
@@ -396,7 +414,7 @@ class mysqly {
     $key = sha1($key);
     
     try {
-      $data = mysqly::fetch('_cache', ['key' => $key])[0];
+      $data = self::fetch('_cache', ['key' => $key])[0];
     }
     catch ( PDOException $e ) {
       if ( strpos($e->getMessage(), "doesn't exist") ) {
@@ -408,7 +426,7 @@ class mysqly {
       $value = $populate();
       
       try {
-        mysqly::insert_update('_cache', [
+        self::insert_update('_cache', [
           'key' => $key,
           'expire' => time() + $ttl,
           'value' => json_encode($value)
@@ -427,7 +445,7 @@ class mysqly {
     $key = sha1($key);
     
     try {
-      mysqly::remove('_cache', ['key' => $key]);
+      self::remove('_cache', ['key' => $key]);
     }
     catch ( PDOException $e ) {}
   }
@@ -450,17 +468,19 @@ class mysqly {
   
   public static function read($event) {
     try {
-      mysqly::exec('SET autocommit = 0');
-      mysqly::exec('LOCK TABLES _queue WRITE');
+      self::exec('SET autocommit = 0');
+      self::exec('LOCK TABLES _queue WRITE');
       
       $row = self::fetch('SELECT * FROM _queue WHERE event = :event ORDER BY id ASC LIMIT 1 FOR UPDATE', [':event' => $event])[0];
       if ( $row ) {
         self::remove('_queue', ['id' => $row['id']]);
-        return json_decode($row['data'], 1);
+        $return = json_decode($row['data'], 1);
       }
       
       self::exec('COMMIT');
       self::exec('UNLOCK TABLES');
+      
+      return $return;
     }
     catch ( PDOException $e ) {}
   }
@@ -476,5 +496,72 @@ class mysqly {
       
       $cb($data);
     }
+  }
+  
+  
+  
+  /* Auto fields creation mode */
+  
+  public static function auto_create($flag = true) {
+    self::$auto_create = $flag;
+  }
+  
+  protected static function create_table_columns($names) {
+    $cols = [];
+    foreach ( $names as $k ) {
+      $type = 'TEXT';
+      
+      if ( $k == 'id' ) {
+        $type = 'SERIAL PRIMARY KEY';
+      }
+      
+      $cols[] = "`{$k}` {$type}";
+    }
+    
+    return implode(',', $cols);
+  }
+  
+  protected static function handle_insert_exception($exception, $table, $insert, $ignore) {
+    if ( !self::$auto_create || strpos($exception->getMessage(), "doesn't exist") === false ) {
+      throw $exception;
+    }
+    
+    $create = self::create_table_columns(array_keys($insert));
+    self::exec("CREATE TABLE `{$table}` ({$create}) Engine = INNODB");
+    self::insert($table, $insert, $ignore);
+  }
+  
+  protected static function handle_insert_update_exception($exception, $table, $insert) {
+    if ( !self::$auto_create ||
+         ( (strpos($exception->getMessage(), "doesn't exist") === false) &&
+           (strpos($exception->getMessage(), "Unknown column") === false) )
+       ) {
+      throw $exception;
+    }
+    
+    if ( strpos($exception->getMessage(), "doesn't exist") !== false ) {
+      $create = self::create_table_columns(array_keys($insert));
+      self::exec("CREATE TABLE `{$table}` ({$create}) Engine = INNODB");
+    }
+    else {
+      preg_match('/Unknown column \'(.+?)\' in/', $exception->getMessage(), $m);
+      $col = $m[1];
+      
+      self::exec("ALTER TABLE `{$table}` ADD `{$col}` TEXT");
+    }
+    
+    self::insert_update($table, $insert);
+  }
+  
+  protected static function handle_update_exception($exception, $table, $filder, $data) {
+    if ( !self::$auto_create || strpos($exception->getMessage(), "Unknown column") === false ) {
+      throw $exception;
+    }
+    
+    preg_match('/Unknown column \'(.+?)\' in/', $exception->getMessage(), $m);
+    $col = $m[1];
+    
+    self::exec("ALTER TABLE `{$table}` ADD `{$col}` TEXT");
+    self::update($table, $filder, $data);
   }
 }
