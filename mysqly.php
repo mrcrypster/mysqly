@@ -410,7 +410,7 @@ class mysqly {
   
   /* Cache storage */
 
-  public static function cache($key, $populate, $ttl = 60) {
+  public static function cache($key, $populate = null, $ttl = 60) {
     $key = sha1($key);
     
     try {
@@ -423,18 +423,20 @@ class mysqly {
     }
     
     if ( !$data || ($data['expire'] < time()) ) {
-      $value = $populate();
-      
-      try {
-        self::insert_update('_cache', [
-          'key' => $key,
-          'expire' => time() + $ttl,
-          'value' => json_encode($value)
-        ]);
+      if ( $populate ) {
+        $value = $populate();
+        
+        try {
+          self::insert_update('_cache', [
+            'key' => $key,
+            'expire' => time() + $ttl,
+            'value' => json_encode($value)
+          ]);
+        }
+        catch ( PDOException $e ) {}
+        
+        return $value;
       }
-      catch ( PDOException $e ) {}
-      
-      return $value;
     }
     else {
       return json_decode($data['value'], 1);
