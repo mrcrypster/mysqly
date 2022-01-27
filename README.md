@@ -36,7 +36,6 @@ $user = mysqly::users_(6); # SELECT * FROM users WHERE id = 6 LIMIT 1
   <li>Secure <a href="https://mysqly.com/#binding">values binding</a></li>
   <li><a href="https://mysqly.com/#in_binding">"IN" array values</a> binding support</li>
   <li><a href="https://mysqly.com/#json">JSON</a> retrieval and attributes manipulation</li>
-  <li>Automatic <a href="https://mysqly.com/#json_retrieve">JSON/string convertions</a></li>
   <li>"Server has gone away" automatic reconnection</li>
   <li><a href="https://mysqly.com/#multiple_dbs">Multiple DB/server connections</a></li>
   <li><a href="https://mysqly.com/#auto_creation">Automatic fields/tables creation</a> mode</li>
