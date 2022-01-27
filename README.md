@@ -21,7 +21,7 @@ mysqly::auth('user', 'pwd', 'db', '127.0.0.1'); # connect to Mysql server
 $users = mysqly::users(['age' => 25]); # SELECT * FROM users WHERE age = 25
 $user = mysqly::users_(6); # SELECT * FROM users WHERE id = 6 LIMIT 1
 
-// And many more features -↓
+// And many more features ↓
 ```
 
 # Features & documentation
