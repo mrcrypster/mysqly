@@ -40,7 +40,7 @@ $user = mysqly::users_(6); # SELECT * FROM users WHERE id = 6 LIMIT 1
   <li><a href="https://mysqly.com/#multiple_dbs">Multiple DB/server connections</a></li>
   <li><a href="https://mysqly.com/#auto_creation">Automatic fields/tables creation</a> mode</li>
   <li><a href="https://mysqly.com/#key_value_storage">Key-value storage</a> component</li>
-  <li><a href="https://mysqly.com/#job_queue">Jow queue </a> component</li>
+  <li><a href="https://mysqly.com/#job_queue">Job queue </a> component</li>
   <li><a href="https://mysqly.com/#cache_storage">Cache storage</a> with TTL support component</li>
   <li><a href="https://mysqly.com/#export">CSV/TSV</a> export</li>
   <li><a href="https://mysqly.com/#increments">Increment and decrement</a> column values atomically</li>
