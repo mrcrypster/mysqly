@@ -7,8 +7,6 @@
 - [Official website](https://mysqly.com/)
 - [Learn advanced Mysql usage with PHP](https://mysqly.com/educate)
 
-[![Download mysqly](https://img.shields.io/sourceforge/dt/mysqly.svg)](https://sourceforge.net/projects/mysqly/files/latest/download)
-
 # Install
 ```bash
 wget https://mysqly.com/mysqly.php
@@ -50,3 +48,5 @@ $user = mysqly::users_(6); # SELECT * FROM users WHERE id = 6 LIMIT 1
   <li><a href="https://mysqly.com/#increments">Increment and decrement</a> column values atomically</li>
   <li><a href="https://mysqly.com/#transactions">Transactions</a> support</li>
 </ul>
+
+[![Download mysqly](https://img.shields.io/sourceforge/dt/mysqly.svg)](https://sourceforge.net/projects/mysqly/files/latest/download)
