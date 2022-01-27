@@ -4,13 +4,13 @@
   <a href="https://mysqly.com/"><img src="/mysqly.png"/></a>
 </p>
 
-# Installation
+- [Official website](https://mysqly.com/)
+- [Learn advanced Mysql usage with PHP](https://mysqly.com/educate)
+
+# Install
 ```bash
 wget https://mysqly.com/mysqly.php
 ```
-
-- [Official website](https://mysqly.com/)
-- [Learn advanced Mysql usage with PHP](https://mysqly.com/educate)
 
 # Usage example
 ```php
@@ -20,9 +20,11 @@ mysqly::auth('user', 'pwd', 'db', '127.0.0.1'); # connect to Mysql server
 // Dynamic methods for table names
 $users = mysqly::users(['age' => 25]); # SELECT * FROM users WHERE age = 25
 $user = mysqly::users_(6); # SELECT * FROM users WHERE id = 6 LIMIT 1
+
+// And many more features -↓
 ```
 
-# Features overview
+# Features & documentation
 
 <ul class="contents">
   <li>Procedural style implementation</li>
