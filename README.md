@@ -5,7 +5,7 @@
 </p>
 
 - [Official website](https://mysqly.com/)
-- [Learn advanced Mysql usage with PHP](https://mysqly.com/educate)
+- [Advanced Mysql knowledge base](https://mysqly.com/educate)
 
 # Install
 ```bash
