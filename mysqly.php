@@ -220,11 +220,30 @@ class mysqly {
       $step = "+{$step}";
     }
     
-    self::exec("UPDATE {$table} SET `{$column}` = {$column} {$step} WHERE {$where}", $bind);
+    return self::exec("UPDATE {$table} SET `{$column}` = `{$column}` {$step} WHERE {$where}", $bind);
   }
   
   public static function decrement($column, $table, $filters) {
     return self::increment($column, $table, $filters, -1);
+  }
+  
+  
+  
+  /* --- Toggle column value --- */
+  
+  public static function toggle($table, $filters, $column, $if, $then) {
+    $bind = $where = [];
+    foreach ( $filters as $k => $v ) {
+      self::condition($k, $v, $where, $bind);
+    }
+    
+    $bind[':if'] = $if;
+    $bind[':v'] = $if;
+    $bind[':then'] = $then;
+    
+    $where = implode(' AND ', $where);
+    
+    return self::exec("UPDATE {$table} SET `{$column}` = IF(`{$column}` = :if, :then, :v) WHERE {$where}", $bind);
   }
   
   

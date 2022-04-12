@@ -1,7 +1,11 @@
 <?php
 
-require __DIR__ . '/mysqly.php';
+require __DIR__ . '/../mysqly.php';
 mysqly::auth('test', 'test', 'test');
+
+
+
+# Cache
 mysqly::exec('DROP TABLE IF EXISTS _cache');
 
 

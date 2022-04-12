@@ -1,7 +1,7 @@
 <?php
 
-require __DIR__ . '/../testy/testy.php';
-require __DIR__ . '/mysqly.php';
+require __DIR__ . '/../../testy/testy.php';
+require __DIR__ . '/../mysqly.php';
 
 class db1 extends mysqly {}
 
@@ -143,6 +143,22 @@ class tests extends testy {
     self::assert((int)199,
                  (int)mysqly::test_age(['name' => 'name_dec']),
                  'Checking decrement');
+  }
+  
+  public static function test_toggle() {
+    mysqly::remove('test', ['name' => 'name_toggle']);
+    mysqly::insert('test', ['age' => 100, 'name' => 'name_toggle']);
+    mysqly::toggle('test', ['name' => 'name_toggle'], 'age', 100, 200);
+
+    self::assert((int)200,
+                 (int)mysqly::test_age(['name' => 'name_toggle']),
+                 'Checking value toggle, first step');
+                 
+    mysqly::toggle('test', ['name' => 'name_toggle'], 'age', 100, 200);
+    
+    self::assert((int)100,
+                 (int)mysqly::test_age(['name' => 'name_toggle']),
+                 'Checking value toggle, second step');
   }
   
   public static function test_transactions() {
