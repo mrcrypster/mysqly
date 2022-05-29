@@ -199,7 +199,7 @@ class mysqly {
   
   public static function random($table, $filter = []) {
     list($where, $bind) = self::filter($filter);
-    $sql = 'SELECT * FROM ' . $table . ' ' . $where . ' ORDER BY RAND() LIMIT 1';
+    $sql = 'SELECT * FROM `' . $table . '` ' . $where . ' ORDER BY RAND() LIMIT 1';
     return self::fetch($sql, $bind)[0];
   }
   
@@ -358,7 +358,7 @@ class mysqly {
     if ( $args[0] && (count($args) == 1) && strpos($name, '_') ) {
       list($table, $col) = explode('_', $name);
       list($where, $bind) = self::filter($args[0]);
-      $row = self::fetch('SELECT ' . ($col ? "`{$col}`" : '*') . ' FROM ' . $table . ' ' . $where, $bind)[0];
+      $row = self::fetch('SELECT ' . ($col ? "`{$col}`" : '*') . ' FROM `' . $table . '` ' . $where, $bind)[0];
       return $col ? $row[$col] : $row;
     }
     
@@ -367,7 +367,7 @@ class mysqly {
       list($agr, $col) = explode('_', $name);
       $table = $args[0];
       list($where, $bind) = self::filter($args[1]);
-      $row = self::fetch('SELECT ' . $agr . '( ' . $col . ') FROM ' . $table . ' ' . $where, $bind)[0];
+      $row = self::fetch('SELECT ' . $agr . '( ' . $col . ') FROM `' . $table . '` ' . $where, $bind)[0];
       return array_shift($row);
     }
     
