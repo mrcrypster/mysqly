@@ -220,7 +220,7 @@ class mysqly {
       $step = "+{$step}";
     }
     
-    return self::exec("UPDATE {$table} SET `{$column}` = `{$column}` {$step} WHERE {$where}", $bind);
+    return self::exec("UPDATE `{$table}` SET `{$column}` = `{$column}` {$step} WHERE {$where}", $bind);
   }
   
   public static function decrement($column, $table, $filters) {
@@ -243,7 +243,7 @@ class mysqly {
     
     $where = implode(' AND ', $where);
     
-    return self::exec("UPDATE {$table} SET `{$column}` = IF(`{$column}` = :if, :then, :v) WHERE {$where}", $bind);
+    return self::exec("UPDATE `{$table}` SET `{$column}` = IF(`{$column}` = :if, :then, :v) WHERE {$where}", $bind);
   }
   
   
@@ -253,7 +253,7 @@ class mysqly {
   public static function insert($table, $data, $ignore = false) {
     $bind = [];
     $values = self::values($data, $bind);
-    $sql = 'INSERT ' . ($ignore ? ' IGNORE ' : '') . "INTO {$table} SET {$values}";
+    $sql = 'INSERT ' . ($ignore ? ' IGNORE ' : '') . "INTO `{$table}` SET {$values}";
     
     try {
       self::exec($sql, $bind);
@@ -268,7 +268,7 @@ class mysqly {
   public static function insert_update($table, $data) {
     $bind = [];
     $values = self::values($data, $bind);
-    $sql = "INSERT INTO {$table} SET {$values} ON DUPLICATE KEY UPDATE {$values}";
+    $sql = "INSERT INTO `{$table}` SET {$values} ON DUPLICATE KEY UPDATE {$values}";
     
     try {
       self::exec($sql, $bind);
@@ -296,7 +296,7 @@ class mysqly {
     
     $values = implode(',', $values);
     
-    $sql = 'INSERT ' . ($ignore ? ' IGNORE ' : '') . "INTO {$table}({$cols}) VALUES{$values}";
+    $sql = 'INSERT ' . ($ignore ? ' IGNORE ' : '') . "INTO `{$table}`({$cols}) VALUES{$values}";
     self::exec($sql, $bind);
     return self::$db->lastInsertId();
   }
@@ -333,7 +333,7 @@ class mysqly {
     list($where, $bind) = self::filter($filter);
     $values = self::values($data, $bind);
     
-    $sql = "UPDATE {$table} SET {$values} {$where}";
+    $sql = "UPDATE `{$table}` SET {$values} {$where}";
     
     try {
       $statement = self::exec($sql, $bind);
@@ -345,7 +345,7 @@ class mysqly {
   
   public static function remove($table, $filter) {
     list($where, $bind) = self::filter($filter);
-    self::exec("DELETE FROM {$table} " . $where, $bind);
+    self::exec("DELETE FROM `{$table}` " . $where, $bind);
   }
   
   
@@ -410,7 +410,7 @@ class mysqly {
     }
     catch (PDOException $e) {
       if ( strpos($e->getMessage(), "doesn't exist") ) {
-        self::exec("CREATE TABLE {$table}(`key` varchar(128) PRIMARY KEY, `value` TEXT) ENGINE = INNODB");
+        self::exec("CREATE TABLE `{$table}`(`key` varchar(128) PRIMARY KEY, `value` TEXT) ENGINE = INNODB");
         self::insert($table, ['key' => $key, 'value' => $value]);
       }
     }
