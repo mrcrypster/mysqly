@@ -73,7 +73,7 @@ class mysqly {
       if ( !static::$auth ) {
         static::$auth = @include static::$auth_file;
       }
-      static::$db = new PDO('mysql:host=' . (isset(static::$auth['host']) ?: '127.0.0.1') . ';port=' . (isset(static::$auth['port']) ?: '3306') . (static::$auth['db'] ? ';dbname=' . static::$auth['db'] : ''), static::$auth['user'], static::$auth['pwd']);
+      static::$db = new PDO('mysql:host=' . (isset(static::$auth['host']) ? static::$auth['host'] : '127.0.0.1') . ';port=' . (isset(static::$auth['port']) ? static::$auth['port'] : '3306') . (static::$auth['db'] ? ';dbname=' . static::$auth['db'] : ''), static::$auth['user'], static::$auth['pwd']);
       static::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
     
