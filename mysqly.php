@@ -73,7 +73,7 @@ class mysqly {
       if ( !self::$auth ) {
         self::$auth = @include self::$auth_file;
       }
-      self::$db = new PDO('mysql:host=' . (self::$auth['host'] ?: 'localhost') . ';dbname=' . self::$auth['db'], self::$auth['user'], self::$auth['pwd']);
+      self::$db = new PDO('mysql:host=' . (isset(self::$auth['host']) ?: '127.0.0.1') . ';port=' . (isset(self::$auth['port']) ?: '3306') . (self::$auth['db'] ? ';dbname=' . self::$auth['db'] : ''), self::$auth['user'], self::$auth['pwd']);
       self::$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
     
