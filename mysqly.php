@@ -3,8 +3,8 @@
 # https://github.com/mrcrypster/mysqly
 
 class mysqly {
-  private static $db;
-  private static $auth = [];
+  protected static $db;
+  protected static $auth = [];
   protected static $auth_file = '/var/lib/mysqly/.auth.php';
   protected static $auto_create = false;
   
