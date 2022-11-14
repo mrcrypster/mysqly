@@ -80,6 +80,10 @@ class tests extends testy {
     $totals = [];
     for ( $i = 0; $i < 50; $i++ ) {
       $row = mysqly::random('test', ['age' => 31]);
+      if ( !isset($totals[$row['name']]) ) {
+        $totals[$row['name']] = 0;
+      }
+
       $totals[$row['name']]++;
     }
     
@@ -290,6 +294,16 @@ class tests extends testy {
                  count($rows),
                  'Checking SQL IN binding');
   }
+
+  public static function test_json_insert() {
+    mysqly::exec('DROP TABLE IF EXISTS json_test');
+    mysqly::exec('CREATE TABLE json_test(id bigint, data_json JSON)');
+    mysqly::insert('json_test', [
+      'id' => 1, 'data_json' => ['name' => 'Denys', 'age' => 37]
+    ]);
+    $rows = mysqly::fetch('json_test');
+    self::assert('Denys', $rows[0]['data_json']['name'], 'JSON encoded/decoded');
+  }
   
   public static function test_json() {
     mysqly::remove('test', ['id' => 300]);
@@ -315,7 +329,7 @@ class tests extends testy {
     while ( $row = fgetcsv($f) ) {
       $csv[] = $row;
     }
-    
+
     self::assert(true,
                  count($csv) > 1 && count($csv[0]) > 1,
                  'Checking CSV export');
@@ -456,8 +470,8 @@ class tests extends testy {
     mysqly::insert_update('test2', ['id' => 1]);
     mysqly::insert_update('test2', ['id' => 1, 'name' => 'Joe']);
     $row = mysqly::test2_(1);
-    self::assert('1',
-                 $row['id'],
+    self::assert(1,
+                 intval($row['id']),
                  'Checking table insert_update create/alter');
                  
     self::assert('Joe',

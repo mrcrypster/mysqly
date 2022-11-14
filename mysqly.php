@@ -57,6 +57,10 @@ class mysqly {
       }
       else {
         $values[] = "`{$name}` = :{$name}";
+        if ( is_array($value) && strpos($name, '_json') ) {
+          $value = json_encode($value);
+        }
+
         $bind[":{$name}"] = $value;
       }
     }
@@ -126,6 +130,8 @@ class mysqly {
   /* Data retrieval */
   
   public static function fetch_cursor($sql_or_table, $bind_or_filter = [], $select_what = '*') {
+    $bind = [];
+
     if ( strpos($sql_or_table, ' ') || (strpos($sql_or_table, 'SELECT ') === 0) ) {
       $sql = $sql_or_table;
       $bind = $bind_or_filter;
@@ -194,7 +200,9 @@ class mysqly {
   
   public static function count($sql_or_table, $bind_or_filter = []) {
     $rows = static::fetch($sql_or_table, $bind_or_filter, 'count(*)');
-    return intval(array_shift(array_shift($rows)));
+    $row = array_shift($rows);
+    $col = array_shift($row);
+    return intval($col);
   }
   
   public static function random($table, $filter = []) {
@@ -396,8 +404,13 @@ class mysqly {
     $table = static::key_value_table($space);
     
     try {
-      $value = static::fetch($table, ['key' => $key], 'value')[0]['value'];
-      return $value;
+      $rows = static::fetch($table, ['key' => $key], 'value');
+      if ( $rows ) {
+        return $rows[0]['value'];
+      }
+      else {
+        return;
+      }
     }
     catch (PDOException $e) {
       return;
@@ -419,7 +432,7 @@ class mysqly {
   }
   
   public static function unset($key, $space = 'default') {
-    $table = sestaticlf::key_value_table($space);
+    $table = static::key_value_table($space);
     
     try {
       static::remove($table, ['key' => $key]);
@@ -435,7 +448,11 @@ class mysqly {
     $key = sha1($key);
     
     try {
-      $data = static::fetch('_cache', ['key' => $key])[0];
+      $data = null;
+      $rows = static::fetch('_cache', ['key' => $key]);
+      if ( $rows ) {
+        $data = $rows[0];
+      }
     }
     catch ( PDOException $e ) {
       if ( strpos($e->getMessage(), "doesn't exist") ) {
@@ -443,7 +460,7 @@ class mysqly {
       }
     }
     
-    if ( !$data || ($data['expire'] < time()) ) {
+    if ( !isset($data) || ($data['expire'] < time()) ) {
       if ( $populate ) {
         $value = $populate();
         
@@ -493,15 +510,17 @@ class mysqly {
     try {
       static::exec('START TRANSACTION');
       
-      $row = static::fetch('SELECT * FROM _queue WHERE event = :event ORDER BY id ASC LIMIT 1 FOR UPDATE SKIP LOCKED', [':event' => $event])[0];
-      if ( $row ) {
+      $rows = static::fetch('SELECT * FROM _queue WHERE event = :event ORDER BY id ASC LIMIT 1 FOR UPDATE SKIP LOCKED', [':event' => $event]);
+
+      if ( $rows ) {
+        $row = $rows[0];
         static::remove('_queue', ['id' => $row['id']]);
         $return = json_decode($row['data'], 1);
       }
       
       static::exec('COMMIT');
       
-      return $return;
+      return isset($return) ? $return : null;
     }
     catch ( PDOException $e ) {}
   }
