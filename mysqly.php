@@ -293,11 +293,11 @@ class mysqly {
     $cols = implode(',', $cols);
     
     foreach ( $rows as $r => $row ) {
-      $values[] = '(' . implode(',', array_map(function($c) use($r) { return ":r{$r}{$c}"; }, range(0, count($row)-1))) . ')';
+      $values[] = '(' . implode(',', array_map(function($c) use($r) { return ":r{$r}_{$c}"; }, range(0, count($row)-1))) . ')';
       
       $c = 0;
       foreach ( $row as $v ) {
-        $bind[":r{$r}{$c}"] = $v;
+        $bind[":r{$r}_{$c}"] = $v;
         $c++;
       }
     }
