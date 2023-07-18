@@ -102,6 +102,10 @@ class mysqly {
     
     return $statement;
   }
+
+  public static function query($sql, $bind = []) {
+    return self::exec($sql, $bind);
+  }
   
   
   
@@ -131,6 +135,7 @@ class mysqly {
   
   public static function fetch_cursor($sql_or_table, $bind_or_filter = [], $select_what = '*') {
     $bind = [];
+    $where = [];
 
     if ( strpos($sql_or_table, ' ') || (strpos($sql_or_table, 'SELECT ') === 0) ) {
       $sql = $sql_or_table;
@@ -204,7 +209,20 @@ class mysqly {
     $col = array_shift($row);
     return intval($col);
   }
-  
+
+  public static function row($sql_or_table, $bind_or_filter = []) {
+    $rows = static::fetch($sql_or_table, $bind_or_filter);
+    $row = $rows ? array_shift($rows) : [];
+    return $row;
+  }
+
+  public static function one($sql_or_table, $bind_or_filter = []) {
+    $rows = static::fetch($sql_or_table, $bind_or_filter);
+    $row = $rows ? array_shift($rows) : [];
+    $val = $row ? array_shift($row) : null;
+    return $val;
+  }
+
   public static function random($table, $filter = []) {
     list($where, $bind) = static::filter($filter);
     $sql = 'SELECT * FROM `' . $table . '` ' . $where . ' ORDER BY RAND() LIMIT 1';

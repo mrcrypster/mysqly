@@ -105,6 +105,18 @@ class tests extends testy {
                  mysqly::count('SELECT count(*) FROM test WHERE age = 71'),
                  'Checking count SQL queries');
   }
+
+  public static function test_row() {
+    self::assert(date('Y-m-d'),
+                 mysqly::row('SELECT date(now()) as dt')['dt'],
+                 'Checking row() to fetch single row');
+  }
+
+  public static function test_one() {
+    self::assert(date('Y-m-d'),
+                 mysqly::one('SELECT date(now()) as dt'),
+                 'Checking one() to fetch single value');
+  }
   
   public static function test_aggregations() {
     mysqly::remove('test', ['name' => 'names_agg']);
