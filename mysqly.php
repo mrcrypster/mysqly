@@ -98,7 +98,16 @@ class mysqly {
     }
     
     $statement = static::$db->prepare($sql);
-    $statement->execute($params);
+    if ( $params ) {
+      foreach ( $params as $k => $v ) {
+	$type = PDO::PARAM_STR;
+	if ( is_int($v) ) $type = PDO::PARAM_INT;
+	else if ( is_null($v) ) $type = PDO::PARAM_NULL;
+	else if ( is_bool($v) ) $type = PDO::PARAM_BOOL;
+	$statement->bindValue($k, $v, $type);
+      }
+    }
+    $statement->execute();
     
     return $statement;
   }

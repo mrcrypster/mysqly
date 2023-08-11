@@ -48,6 +48,16 @@ class tests extends testy {
                  'Checking current timestamp');
   }
   
+  public static function test_bit() {
+    mysqly::query('TRUNCATE test_bit');
+    mysqly::insert('test_bit', ['flag' => true]);
+    self::assert(true, (bool)mysqly::one('SELECT flag FROM test_bit LIMIT 1'), 'Testing BIT column value / true');
+
+    mysqly::query('TRUNCATE test_bit');
+    mysqly::insert('test_bit', ['flag' => false]);
+    self::assert(false, (bool)mysqly::one('SELECT flag FROM test_bit LIMIT 1'), 'Testing BIT column value / false');
+  }
+
   public static function test_fetch() {
     $new_id1 = mysqly::insert('test', ['age' => 29, 'name' => 'Test Fetch 1']);
     $new_id2 = mysqly::insert('test', ['age' => 29, 'name' => 'Test Fetch 2']);
