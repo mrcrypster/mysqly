@@ -285,10 +285,10 @@ class mysqly {
   
   /* Data insertion */
   
-  public static function insert($table, $data, $ignore = false) {
+  public static function insert($table, $data, $ignore = false, $replace = false) {
     $bind = [];
     $values = static::values($data, $bind);
-    $sql = 'INSERT ' . ($ignore ? ' IGNORE ' : '') . "INTO `{$table}` SET {$values}";
+    $sql = ($replace ? 'REPLACE' : 'INSERT') . ' ' . ($ignore ? ' IGNORE ' : '') . "INTO `{$table}` SET {$values}";
     
     try {
       static::exec($sql, $bind);
@@ -298,6 +298,10 @@ class mysqly {
     }
     
     return static::$db->lastInsertId();
+  }
+
+  public static function replace($table, $data) {
+    return self::insert($table, $data, false, true);
   }
   
   public static function insert_update($table, $data) {
@@ -313,7 +317,7 @@ class mysqly {
     }
   }
   
-  public static function multi_insert($table, $rows, $ignore = false) {
+  public static function multi_insert($table, $rows, $ignore = false, $replace = false) {
     $bind = [];
     
     $cols = array_keys($rows[0]);
@@ -331,9 +335,13 @@ class mysqly {
     
     $values = implode(',', $values);
     
-    $sql = 'INSERT ' . ($ignore ? ' IGNORE ' : '') . "INTO `{$table}`({$cols}) VALUES{$values}";
+    $sql = ($replace ? 'REPLACE' : 'INSERT') . ' ' . ($ignore ? ' IGNORE ' : '') . "INTO `{$table}`({$cols}) VALUES{$values}";
     static::exec($sql, $bind);
     return static::$db->lastInsertId();
+  }
+
+  public static function multi_replace($table, $rows) {
+    return self::multi_insert($table, $rows, false, true);
   }
   
   

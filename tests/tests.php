@@ -271,6 +271,37 @@ class tests extends testy {
                  (int)$row['age'],
                  'Checking updated column value');
   }
+
+  public static function test_replace() {
+    $new_id = mysqly::insert('test', ['age' => 27, 'name' => 'Test']);
+    mysqly::replace('test', [
+      'id' => $new_id,
+      'age' => 28
+    ]);
+
+    $row = mysqly::fetch('test', ['id' => $new_id])[0];
+    self::assert(28,
+                 (int)$row['age'],
+                 'Checking replaced column value');
+  }
+
+  public static function test_multi_replace() {
+    $new_id1 = mysqly::insert('test', ['age' => 72, 'name' => 'Test1']);
+    $new_id2 = mysqly::insert('test', ['age' => 72, 'name' => 'Test2']);
+    mysqly::multi_replace('test', [
+      ['id' => $new_id1, 'age' => 82],
+      ['id' => $new_id2, 'age' => 82],
+    ]);
+
+    $row1 = mysqly::fetch('test', ['id' => $new_id1])[0];
+    $row2 = mysqly::fetch('test', ['id' => $new_id2])[0];
+    self::assert(82,
+                 (int)$row1['age'],
+                 'Checking replaced column value');
+    self::assert(82,
+                 (int)$row2['age'],
+                 'Checking replaced column value');
+  }
   
   public static function test_remove() {
     $new_id = mysqly::insert('test', ['age' => 277, 'name' => 'Test Remove']);
