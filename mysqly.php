@@ -28,6 +28,7 @@ class mysqly {
   }
   
   private static function condition($k, $v, &$where, &$bind) {
+    $k = trim($k, ':');
     if ( is_array($v) ) {
       $in = [];
       
