@@ -315,6 +315,8 @@ class mysqly {
     catch ( PDOException $e ) {
       static::handle_insert_update_exception($e, $table, $data);
     }
+
+    return static::$db->lastInsertId();
   }
   
   public static function multi_insert($table, $rows, $ignore = false, $replace = false) {

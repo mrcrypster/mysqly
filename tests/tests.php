@@ -270,6 +270,10 @@ class tests extends testy {
     self::assert(28,
                  (int)$row['age'],
                  'Checking updated column value');
+
+    mysqly::remove('test', ['age' => 101]);
+    $new_id = mysqly::insert_update('test', ['age' => 101]);
+    self::assert(true, $new_id > 0, 'Checking new ID from insert_update');
   }
 
   public static function test_replace() {
